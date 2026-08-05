@@ -116,10 +116,13 @@ async function runHybridSync() {
                 const usedGb = bytesToGB(usedBytes);
                 
                 const dbGb = parseFloat(dbRow.customer_storage || 0);
+                const dbUsedGb = parseFloat(dbRow.used_storage_gb || 0);
 
                 // Math Tolerance Threshold: > 0.01GB change
                 const diff = apiGb - dbGb;
-                if (Math.abs(diff) > 0.01 || Math.abs(usedGb - parseFloat(dbRow.used_storage_gb || 0)) > 0.01) {
+                const usedDiff = usedGb - dbUsedGb;
+                
+                if (Math.abs(diff) > 0.01 || Math.abs(usedDiff) > 0.01) {
                     console.log(`Syncing data for ${rawName}: Quota -> ${apiGb.toFixed(2)}GB, Usage -> ${usedGb.toFixed(2)}GB`);
                     
                     idsToDeprecate.push(dbRow.id);
@@ -130,14 +133,26 @@ async function runHybridSync() {
                     newRow.used_storage_gb = usedGb.toFixed(2);
                     newRow.is_latest_record = true;
                     
+                    // Update size_increased based on quota difference
+                    const sign = diff > 0 ? "+" : "";
+                    newRow.size_increased = `${sign}${diff.toFixed(2)} GB`;
+                    
                     updatesToInsert.push(newRow);
 
+                    let logParts = [];
+                    if (Math.abs(diff) > 0.01) {
+                        logParts.push(`quota updated from ${dbGb.toFixed(2)}GB to ${apiGb.toFixed(2)}GB`);
+                    }
+                    if (Math.abs(usedDiff) > 0.01) {
+                        logParts.push(`usage updated from ${dbUsedGb.toFixed(2)}GB to ${usedGb.toFixed(2)}GB`);
+                    }
+                    
                     logsToInsert.push([
                         dbRow.partner,
                         dbRow.partner_email,
                         dbRow.customer_name,
                         dbRow.customer_id,
-                        `Customer storage (allocated quota) updated from ${dbGb.toFixed(2)}GB to ${apiGb.toFixed(2)}GB via API.`
+                        `Customer ${logParts.join(' and ')} via API.`
                     ]);
                 }
             }
