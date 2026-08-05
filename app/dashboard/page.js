@@ -271,7 +271,7 @@ export default function Dashboard() {
         const activeRows = filteredData.filter(r => r.displayStatus === "Activated" || r.displayStatus === "Won");
         const activeData = data.filter(r => {
             const status = r.status ? String(r.status).toLowerCase() : 'activated';
-            const baseIsIndirect = r.partner && String(r.partner).toLowerCase().includes('indirect');
+            const baseIsIndirect = (r.partner && String(r.partner).toLowerCase().includes('indirect')) || (r.customer_name && String(r.customer_name).toLowerCase().includes('indirect'));
             const renewedIsIndirect = r.renewed_partner ? String(r.renewed_partner).toLowerCase().includes('indirect') : baseIsIndirect;
             return status !== 'lost' && !renewedIsIndirect;
         });
@@ -279,7 +279,7 @@ export default function Dashboard() {
         const usedStorage = data.reduce((acc, r) => {
             const status = r.status ? String(r.status).toLowerCase() : 'activated';
             
-            const baseIsIndirect = r.partner && String(r.partner).toLowerCase().includes('indirect');
+            const baseIsIndirect = (r.partner && String(r.partner).toLowerCase().includes('indirect')) || (r.customer_name && String(r.customer_name).toLowerCase().includes('indirect'));
             const renewedIsIndirect = r.renewed_partner ? String(r.renewed_partner).toLowerCase().includes('indirect') : baseIsIndirect;
             
             const base = parseFloat(String(r.backup_storage_gb).replace(/[^\d.-]/g, '')) || 0;
@@ -300,7 +300,7 @@ export default function Dashboard() {
         else if (isRenFilterActive) filteredTitle = "Filtered Renewed Size";
 
         filteredStorage = filteredData.reduce((acc, r) => {
-            const baseIsIndirect = r.partner && String(r.partner).toLowerCase().includes('indirect');
+            const baseIsIndirect = (r.partner && String(r.partner).toLowerCase().includes('indirect')) || (r.customer_name && String(r.customer_name).toLowerCase().includes('indirect'));
             const renewedIsIndirect = r.renewed_partner ? String(r.renewed_partner).toLowerCase().includes('indirect') : baseIsIndirect;
             const base = parseFloat(String(r.backup_storage_gb).replace(/[^\d.-]/g, '')) || 0;
             const extra = parseFloat(String(r.size_increased).replace(/[^\d.-]/g, '')) || 0;
@@ -315,13 +315,13 @@ export default function Dashboard() {
         const totalValue = activeData.reduce((acc, r) => acc + (parseFloat(r.value) || 0), 0);
 
         const totalDirectCount = data.filter(r => {
-            const baseIsIndirect = r.partner && String(r.partner).toLowerCase().includes('indirect');
+            const baseIsIndirect = (r.partner && String(r.partner).toLowerCase().includes('indirect')) || (r.customer_name && String(r.customer_name).toLowerCase().includes('indirect'));
             const extra = parseFloat(String(r.size_increased).replace(/[^\d.-]/g, '')) || 0;
             const hasRenewal = extra > 0 || (r.renewed_partner && r.renewed_partner.toLowerCase() !== 'none' && r.renewed_partner.trim() !== '');
             return !baseIsIndirect || hasRenewal;
         }).length;
         const activeDirectCount = activeRows.filter(r => {
-            const baseIsIndirect = r.partner && String(r.partner).toLowerCase().includes('indirect');
+            const baseIsIndirect = (r.partner && String(r.partner).toLowerCase().includes('indirect')) || (r.customer_name && String(r.customer_name).toLowerCase().includes('indirect'));
             const extra = parseFloat(String(r.size_increased).replace(/[^\d.-]/g, '')) || 0;
             const hasRenewal = extra > 0 || (r.renewed_partner && r.renewed_partner.toLowerCase() !== 'none' && r.renewed_partner.trim() !== '');
             return !baseIsIndirect || hasRenewal;
@@ -900,12 +900,12 @@ export default function Dashboard() {
                                     </tr>
                                 ) : (
                                     filteredData.filter(r => {
-                                        const baseIsIndirect = r.partner && String(r.partner).toLowerCase().includes('indirect');
+                                        const baseIsIndirect = (r.partner && String(r.partner).toLowerCase().includes('indirect')) || (r.customer_name && String(r.customer_name).toLowerCase().includes('indirect'));
                                         const extra = parseFloat(String(r.size_increased).replace(/[^\d.-]/g, '')) || 0;
                                         const hasRenewal = extra > 0 || (r.renewed_partner && r.renewed_partner.toLowerCase() !== 'none' && r.renewed_partner.trim() !== '');
                                         return !baseIsIndirect || hasRenewal;
                                     }).map((row, idx) => {
-                                        const baseIsIndirect = row.partner && String(row.partner).toLowerCase().includes('indirect');
+                                        const baseIsIndirect = (row.partner && String(row.partner).toLowerCase().includes('indirect')) || (row.customer_name && String(row.customer_name).toLowerCase().includes('indirect'));
                                         return (
                                         <tr key={idx} className="hover:bg-slate-100 dark:hover:bg-slate-800/30 transition-colors">
                                             <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{idx + 1}</td>
