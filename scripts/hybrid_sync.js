@@ -14,10 +14,24 @@ function bytesToGB(bytes) {
 }
 
 async function fetchAPIData(url, token, sid) {
-    const fetchUrl = `${url}token=${token}&sid=${sid}`;
-    console.log(`Fetching from API: ${fetchUrl.replace(token, '***')}`);
+    console.log(`Fetching from API via POST: ${url.split('?')[0]} (sid=${sid})`);
     
-    const response = await fetch(fetchUrl);
+    // We remove the trailing '?' from the URL if it exists, since we are using POST
+    const baseUrl = url.endsWith('?') ? url.slice(0, -1) : url;
+    
+    const form = new URLSearchParams();
+    form.append('action', 'get_users');
+    form.append('auth', token);
+    form.append('sid', sid);
+    
+    const response = await fetch(baseUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: form
+    });
+    
     const text = await response.text();
     
     if (!response.ok) {
