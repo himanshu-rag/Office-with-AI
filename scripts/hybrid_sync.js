@@ -155,8 +155,7 @@ async function runHybridSync() {
                     recordsToUpdate.push({
                         id: dbRow.id,
                         customer_storage: apiGb.toFixed(2),
-                        used_storage_gb: usedGb.toFixed(2),
-                        size_increased: sizeIncreased
+                        used_storage_gb: usedGb.toFixed(2)
                     });
 
                     let logParts = [];
@@ -186,8 +185,8 @@ async function runHybridSync() {
         try {
             for (const record of recordsToUpdate) {
                 await connection.execute(
-                    `UPDATE backup_history SET customer_storage = ?, used_storage_gb = ?, size_increased = ? WHERE id = ?`,
-                    [record.customer_storage, record.used_storage_gb, record.size_increased, record.id]
+                    `UPDATE backup_history SET customer_storage = ?, used_storage_gb = ? WHERE id = ?`,
+                    [record.customer_storage, record.used_storage_gb, record.id]
                 );
             }
 
