@@ -316,11 +316,15 @@ export default function Dashboard() {
 
         const totalDirectCount = data.filter(r => {
             const baseIsIndirect = r.partner && String(r.partner).toLowerCase().includes('indirect');
-            return !baseIsIndirect;
+            const extra = parseFloat(String(r.size_increased).replace(/[^\d.-]/g, '')) || 0;
+            const hasRenewal = extra > 0 || (r.renewed_partner && r.renewed_partner.toLowerCase() !== 'none' && r.renewed_partner.trim() !== '');
+            return !baseIsIndirect || hasRenewal;
         }).length;
         const activeDirectCount = activeRows.filter(r => {
             const baseIsIndirect = r.partner && String(r.partner).toLowerCase().includes('indirect');
-            return !baseIsIndirect;
+            const extra = parseFloat(String(r.size_increased).replace(/[^\d.-]/g, '')) || 0;
+            const hasRenewal = extra > 0 || (r.renewed_partner && r.renewed_partner.toLowerCase() !== 'none' && r.renewed_partner.trim() !== '');
+            return !baseIsIndirect || hasRenewal;
         }).length;
         const isFiltered = data.length !== filteredData.length;
 
@@ -897,7 +901,9 @@ export default function Dashboard() {
                                 ) : (
                                     filteredData.filter(r => {
                                         const baseIsIndirect = r.partner && String(r.partner).toLowerCase().includes('indirect');
-                                        return !baseIsIndirect;
+                                        const extra = parseFloat(String(r.size_increased).replace(/[^\d.-]/g, '')) || 0;
+                                        const hasRenewal = extra > 0 || (r.renewed_partner && r.renewed_partner.toLowerCase() !== 'none' && r.renewed_partner.trim() !== '');
+                                        return !baseIsIndirect || hasRenewal;
                                     }).map((row, idx) => {
                                         const baseIsIndirect = row.partner && String(row.partner).toLowerCase().includes('indirect');
                                         return (
