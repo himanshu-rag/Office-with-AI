@@ -903,7 +903,9 @@ export default function Dashboard() {
                                         return (
                                         <tr key={idx} className="hover:bg-slate-100 dark:hover:bg-slate-800/30 transition-colors">
                                             <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{idx + 1}</td>
-                                            <td className="px-6 py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{row.customer_name || '-'}</td>
+                                            <td className="px-6 py-4 text-sm font-medium text-slate-800 dark:text-slate-200">
+                                                {(row.customer_name || '-').replace(/\s*[\(\[]indirect[\)\]]\s*/gi, '').trim()}
+                                            </td>
                                             <td className="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">{baseIsIndirect ? '0' : (row.backup_storage_gb || '0')}</td>
                                             <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{row.activation_date || '-'}</td>
                                             <td className="px-6 py-4 text-sm">
