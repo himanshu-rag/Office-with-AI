@@ -18,9 +18,9 @@ export async function GET(request) {
         
         let rows = [];
         if (isSuperadmin) {
-            [rows] = await db.query(`SELECT * FROM ??`, [table]);
+            [rows] = await db.query(`SELECT * FROM ?? WHERE is_latest_record = TRUE`, [table]);
         } else {
-            [rows] = await db.query(`SELECT * FROM ?? WHERE partner_email = ?`, [table, email]);
+            [rows] = await db.query(`SELECT * FROM ?? WHERE partner_email = ? AND is_latest_record = TRUE`, [table, email]);
         }
         
         const data = [];
@@ -42,10 +42,12 @@ export async function GET(request) {
                 customer_name: row.customer_name,
                 customer_id: row.customer_id,
                 backup_storage_gb: row.backup_storage_gb !== null ? String(row.backup_storage_gb) : null,
+                used_storage_gb: row.used_storage_gb !== null ? String(row.used_storage_gb) : '0',
                 activation_date: formatDbDate(row.activation_date),
                 status: row.status,
                 renewal_date: formatDbDate(row.renewal_date),
                 size_increased: row.size_increased,
+                customer_storage: row.customer_storage !== null ? String(row.customer_storage) : '0',
                 value: row.value !== null ? parseFloat(row.value) : null,
                 renewal_cycle_months: row.renewal_cycle_months,
                 renewed_partner: row.renewed_partner

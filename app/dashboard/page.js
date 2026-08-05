@@ -30,8 +30,12 @@ function ThemeToggle() {
 
 export default function Dashboard() {
     const [data, setData] = useState([]);
+    const [logs, setLogs] = useState([]);
     const [allocatedStorage, setAllocatedStorage] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isSyncingAPI, setIsSyncingAPI] = useState(false);
+    const [isSyncingSheet, setIsSyncingSheet] = useState(false);
+    const [isActivityOpen, setIsActivityOpen] = useState(false);
     const [email, setEmail] = useState("");
     const router = useRouter();
 
@@ -61,8 +65,13 @@ export default function Dashboard() {
         try {
             const res = await fetch(`/api/data?email=${encodeURIComponent(targetEmail)}`);
             const result = await res.json();
+            
+            const logsRes = await fetch(`/api/logs?email=${encodeURIComponent(targetEmail)}`);
+            const logsResult = await logsRes.json();
+            
             if (result.status === "success") {
                 setData(result.data || []);
+                setLogs(logsResult.data || []);
                 setAllocatedStorage(result.allocated_storage);
                 if (isMasquerade) {
                     setViewMode("dashboard");
@@ -123,6 +132,42 @@ export default function Dashboard() {
         setViewMode("directory");
         setViewingPartnerEmail("");
         setViewingPartnerName("");
+    };
+
+    const handleSyncData = async (type = 'api') => {
+        if (type === 'api') setIsSyncingAPI(true);
+        else setIsSyncingSheet(true);
+
+        try {
+            const res = await fetch('/api/sync', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type })
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                // Refresh data
+                if (isSuperadmin && viewMode === "directory") {
+                    const resDir = await fetch(`/api/partners?email=${encodeURIComponent(email)}`);
+                    const resultDir = await resDir.json();
+                    if (resultDir.status === "success") {
+                        setPartners(resultDir.data || []);
+                    }
+                } else if (isSuperadmin && viewingPartnerEmail) {
+                    await fetchCustomerData(viewingPartnerEmail, true, viewingPartnerName);
+                } else {
+                    await fetchCustomerData(email);
+                }
+            } else {
+                alert(`Sync (${type}) failed: ` + (result.message || "Unknown error"));
+            }
+        } catch (err) {
+            console.error(err);
+            alert(`Sync (${type}) failed to execute.`);
+        } finally {
+            if (type === 'api') setIsSyncingAPI(false);
+            else setIsSyncingSheet(false);
+        }
     };
 
     const parseDateString = (str) => {
@@ -364,7 +409,27 @@ export default function Dashboard() {
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex flex-wrap items-center gap-4">
+                            <button 
+                                onClick={() => handleSyncData('api')} 
+                                disabled={isSyncingAPI || isSyncingSheet}
+                                className={`px-4 py-2 rounded-xl border transition-all duration-300 font-medium flex items-center gap-2 shadow-sm text-sm ${isSyncingAPI ? 'bg-sky-500/50 text-white cursor-not-allowed border-transparent' : 'bg-sky-500 hover:bg-sky-400 text-white border-sky-400 hover:shadow-sky-500/20'}`}
+                            >
+                                <svg className={`w-4 h-4 ${isSyncingAPI ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                {isSyncingAPI ? 'Syncing...' : 'Sync API'}
+                            </button>
+                            <button 
+                                onClick={() => handleSyncData('sheet')} 
+                                disabled={isSyncingAPI || isSyncingSheet}
+                                className={`px-4 py-2 rounded-xl border transition-all duration-300 font-medium flex items-center gap-2 shadow-sm text-sm ${isSyncingSheet ? 'bg-emerald-500/50 text-white cursor-not-allowed border-transparent' : 'bg-emerald-500 hover:bg-emerald-400 text-white border-emerald-400 hover:shadow-emerald-500/20'}`}
+                            >
+                                <svg className={`w-4 h-4 ${isSyncingSheet ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                {isSyncingSheet ? 'Syncing...' : 'Sync Sheet'}
+                            </button>
                             <ThemeToggle />
                             <button onClick={handleLogout} className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-slate-900 dark:text-white rounded-xl border border-white/10 transition-all duration-200 font-medium flex items-center gap-2 shadow-sm">
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -687,6 +752,31 @@ export default function Dashboard() {
                             />
                             <svg className="w-4 h-4 absolute left-4 top-3 text-slate-500 group-focus-within:text-sky-500 dark:sky-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         </div>
+                        <button 
+                            onClick={() => handleSyncData('api')} 
+                            disabled={isSyncingAPI}
+                            className={`px-5 py-2.5 rounded-xl border transition-all duration-300 font-medium flex items-center gap-2 shadow-sm ${isSyncingAPI ? 'bg-sky-500/50 text-white cursor-not-allowed border-transparent' : 'bg-sky-500 hover:bg-sky-400 text-white border-sky-400 hover:shadow-sky-500/20'}`}
+                        >
+                            <svg className={`w-4 h-4 ${isSyncingAPI ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            {isSyncingAPI ? 'Syncing API...' : 'Sync Real-Time Data'}
+                        </button>
+                        <button
+                            onClick={() => setIsActivityOpen(true)}
+                            className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-all duration-300 relative group"
+                            aria-label="Recent Activity"
+                        >
+                            <svg className="w-5 h-5 group-hover:text-sky-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {logs.length > 0 && (
+                                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500 border-2 border-white dark:border-slate-900"></span>
+                                </span>
+                            )}
+                        </button>
                         <ThemeToggle />
                         {!isSuperadmin && (
                             <button onClick={handleLogout} className="px-6 py-2.5 bg-white dark:bg-slate-900/50 hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-300 dark:border-slate-700 hover:border-slate-500 transition-all duration-300 font-medium flex items-center gap-2 shadow-sm hover:shadow-md">
@@ -729,6 +819,58 @@ export default function Dashboard() {
                     </div>
                 </div>
 
+                {isActivityOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+                        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsActivityOpen(false)}></div>
+                        <div className="relative bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
+                            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm z-10 rounded-t-2xl">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-sky-500/10 rounded-lg text-sky-500">
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-lg font-bold text-slate-800 dark:text-white">Recent Activity Logs</h3>
+                                </div>
+                                <button onClick={() => setIsActivityOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <div className="overflow-y-auto p-6 space-y-4 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700 flex-1">
+                                {logs.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-12 text-slate-500">
+                                        <svg className="w-12 h-12 mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <p className="text-base font-medium">No recent activity found.</p>
+                                        <p className="text-sm mt-1 opacity-70">Audit logs for automated changes will appear here.</p>
+                                    </div>
+                                ) : (
+                                    logs.map((log) => (
+                                        <div key={log.id} className="flex gap-4 items-start p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80 hover:border-slate-200 dark:hover:border-slate-700 transition-colors">
+                                            <div className="mt-1 flex-shrink-0 w-10 h-10 rounded-full bg-sky-500/10 flex items-center justify-center">
+                                                <svg className="w-5 h-5 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex items-center justify-between mb-1.5">
+                                                    <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{log.customer_name || 'System'}</p>
+                                                    <span className="text-xs font-medium text-slate-500 bg-slate-200/50 dark:bg-slate-700/50 px-2.5 py-1 rounded-full">{log.created_at}</span>
+                                                </div>
+                                                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{log.log_information}</p>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="bg-white/5 border border-white/5 rounded-2xl backdrop-blur-sm shadow-xl overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
@@ -736,12 +878,13 @@ export default function Dashboard() {
                                 <tr className="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50">
                                     <th className="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">S.No.</th>
                                     <th className="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Customer Name</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">ID</th>
                                     <th className="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Storage (GB)</th>
                                     <th className="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Activation Date</th>
                                     <th className="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Status</th>
                                     <th className="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Renewal Date</th>
                                     <th className="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Renewed Size</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Customer Storage</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Total Usage</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-800/50">
@@ -761,7 +904,6 @@ export default function Dashboard() {
                                         <tr key={idx} className="hover:bg-slate-100 dark:hover:bg-slate-800/30 transition-colors">
                                             <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{idx + 1}</td>
                                             <td className="px-6 py-4 text-sm font-medium text-slate-800 dark:text-slate-200">{row.customer_name || '-'}</td>
-                                            <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{row.customer_id || '-'}</td>
                                             <td className="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">{baseIsIndirect ? '0' : (row.backup_storage_gb || '0')}</td>
                                             <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{row.activation_date || '-'}</td>
                                             <td className="px-6 py-4 text-sm">
@@ -775,6 +917,28 @@ export default function Dashboard() {
                                             </td>
                                             <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{row.renewal_date || '-'}</td>
                                             <td className="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">{row.size_increased || '-'}</td>
+                                            <td className="px-6 py-4 text-sm font-semibold text-sky-600 dark:text-sky-400">{row.customer_storage ? `${row.customer_storage} GB` : '0 GB'}</td>
+                                            <td className="px-6 py-4">
+                                                {(() => {
+                                                    const maxStorage = parseFloat(baseIsIndirect ? '0' : (row.customer_storage || '0'));
+                                                    const usedStorage = parseFloat(baseIsIndirect ? '0' : (row.used_storage_gb || '0'));
+                                                    const usagePercent = maxStorage > 0 ? Math.min((usedStorage / maxStorage) * 100, 100) : 0;
+                                                    return (
+                                                        <div className="flex flex-col gap-1.5 w-32">
+                                                            <div className="flex items-center justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
+                                                                <span>{usedStorage.toFixed(2)} GB</span>
+                                                                <span>{usagePercent.toFixed(0)}%</span>
+                                                            </div>
+                                                            <div className="w-full bg-slate-200 dark:bg-slate-700/50 rounded-full h-1.5 overflow-hidden">
+                                                                <div 
+                                                                    className={`h-1.5 rounded-full transition-all duration-500 ${usagePercent > 90 ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]' : usagePercent > 75 ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]' : 'bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.6)]'}`}
+                                                                    style={{ width: `${Math.max(usagePercent, 2)}%` }}
+                                                                ></div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })()}
+                                            </td>
                                         </tr>
                                         );
                                     })

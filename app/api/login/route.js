@@ -21,7 +21,7 @@ export async function POST(request) {
         }
 
         const table = process.env.DB_TABLE || 'backup_history';
-        const [rows] = await db.query(`SELECT partner_email FROM ?? WHERE partner_email = ? LIMIT 1`, [table, email]);
+        const [rows] = await db.query(`SELECT partner_email FROM ?? WHERE partner_email = ? AND is_latest_record = TRUE LIMIT 1`, [table, email]);
         
         if (rows.length > 0) {
             return NextResponse.json({ status: "success", message: "Login successful", email: email });

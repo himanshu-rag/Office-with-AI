@@ -20,9 +20,11 @@ async function fetchAPIData(url, token, sid) {
     const baseUrl = url.endsWith('?') ? url.slice(0, -1) : url;
     
     const form = new URLSearchParams();
-    form.append('action', 'get_users');
+    form.append('action', 'export');
     form.append('auth', token);
+    form.append('search', 'search-customers');
     form.append('sid', sid);
+    form.append('json', 'true');
     
     const response = await fetch(baseUrl, {
         method: 'POST',
