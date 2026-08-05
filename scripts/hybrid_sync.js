@@ -13,6 +13,15 @@ function bytesToGB(bytes) {
     return parseFloat(bytes) / (1024 ** 3);
 }
 
+function normalizeString(val) {
+    if (!val) return '';
+    let str = String(val).trim().toLowerCase();
+    // Remove text in parentheses/brackets to handle "(Indirect)" and similar suffixes
+    str = str.replace(/\[.*?\]|\(.*?\)/g, '');
+    str = str.replace(/\s+/g, ' ').trim();
+    return str;
+}
+
 async function fetchAPIData(url, token, sid) {
     console.log(`Fetching from API via POST: ${url.split('?')[0]} (sid=${sid})`);
     
@@ -91,7 +100,7 @@ async function runHybridSync() {
         const dbLookup = {};
         dbRows.forEach(row => {
             if (row.customer_name) {
-                const normName = String(row.customer_name).trim().toLowerCase();
+                const normName = normalizeString(row.customer_name);
                 dbLookup[normName] = row;
             }
         });
@@ -108,8 +117,7 @@ async function runHybridSync() {
 
         console.log(`Successfully fetched ${allApiData.length} total records from API.`);
 
-        const updatesToInsert = [];
-        const idsToDeprecate = [];
+        const recordsToUpdate = [];
         const logsToInsert = [];
         const processedApiNames = new Set();
 
@@ -118,7 +126,7 @@ async function runHybridSync() {
             const rawName = row['Customer Name'];
             if (!rawName) continue;
 
-            const normName = String(rawName).trim().toLowerCase();
+            const normName = normalizeString(rawName);
             processedApiNames.add(normName);
 
             if (dbLookup[normName]) {
@@ -141,27 +149,19 @@ async function runHybridSync() {
                 if (Math.abs(diff) > 0.01 || Math.abs(usedDiff) > 0.01) {
                     console.log(`Syncing data for ${rawName}: Quota -> ${apiGb.toFixed(2)}GB, Usage -> ${usedGb.toFixed(2)}GB`);
                     
-                    idsToDeprecate.push(dbRow.id);
-
-                    const newRow = { ...dbRow };
-                    delete newRow.id; // Auto-increment
-                    newRow.customer_storage = apiGb.toFixed(2);
-                    newRow.used_storage_gb = usedGb.toFixed(2);
-                    newRow.is_latest_record = true;
-                    
-                    // Update size_increased based on quota difference
                     const sign = diff > 0 ? "+" : "";
-                    newRow.size_increased = `${sign}${diff.toFixed(2)} GB`;
-                    
-                    updatesToInsert.push(newRow);
+                    const sizeIncreased = `${sign}${diff.toFixed(2)} GB`;
+
+                    recordsToUpdate.push({
+                        id: dbRow.id,
+                        customer_storage: apiGb.toFixed(2),
+                        used_storage_gb: usedGb.toFixed(2),
+                        size_increased: sizeIncreased
+                    });
 
                     let logParts = [];
-                    if (Math.abs(diff) > 0.01) {
-                        logParts.push(`quota updated from ${dbGb.toFixed(2)}GB to ${apiGb.toFixed(2)}GB`);
-                    }
-                    if (Math.abs(usedDiff) > 0.01) {
-                        logParts.push(`usage updated from ${dbUsedGb.toFixed(2)}GB to ${usedGb.toFixed(2)}GB`);
-                    }
+                    if (Math.abs(diff) > 0.01) logParts.push(`quota updated to ${apiGb.toFixed(2)}GB`);
+                    if (Math.abs(usedDiff) > 0.01) logParts.push(`usage updated to ${usedGb.toFixed(2)}GB`);
                     
                     logsToInsert.push([
                         dbRow.partner,
@@ -175,33 +175,20 @@ async function runHybridSync() {
         }
 
         // 5. Execute DB Transaction
-        if (updatesToInsert.length === 0 && idsToDeprecate.length === 0) {
+        if (recordsToUpdate.length === 0) {
             console.log("Diff Checker: No changes detected. All systems synchronized.");
             return;
         }
 
-        console.log(`Executing ${idsToDeprecate.length} deprecations and ${updatesToInsert.length} row insertions.`);
+        console.log(`Executing ${recordsToUpdate.length} direct row updates.`);
         await connection.beginTransaction();
 
         try {
-            if (idsToDeprecate.length > 0) {
-                const placeholders = idsToDeprecate.map(() => '?').join(',');
-                await connection.query(
-                    `UPDATE backup_history SET is_latest_record = False WHERE id IN (${placeholders})`,
-                    idsToDeprecate
+            for (const record of recordsToUpdate) {
+                await connection.execute(
+                    `UPDATE backup_history SET customer_storage = ?, used_storage_gb = ?, size_increased = ? WHERE id = ?`,
+                    [record.customer_storage, record.used_storage_gb, record.size_increased, record.id]
                 );
-            }
-
-            if (updatesToInsert.length > 0) {
-                const cols = Object.keys(updatesToInsert[0]);
-                const colsStr = cols.map(c => `\`${c}\``).join(', ');
-                const placeholders = cols.map(() => '?').join(', ');
-                const sql = `INSERT INTO backup_history (${colsStr}) VALUES (${placeholders})`;
-
-                for (const row of updatesToInsert) {
-                    const values = cols.map(c => row[c]);
-                    await connection.query(sql, values);
-                }
             }
 
             if (logsToInsert.length > 0) {
@@ -210,7 +197,7 @@ async function runHybridSync() {
             }
 
             await connection.commit();
-            console.log("Hybrid Sync Complete! All changes safely recorded.");
+            console.log("Hybrid Sync Complete! All rows updated in place.");
         } catch (err) {
             await connection.rollback();
             console.error("Transaction rolled back due to error:", err);
