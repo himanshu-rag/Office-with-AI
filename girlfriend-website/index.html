@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Love Story - Happy Girlfriend's Day</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Alex+Brush&display=swap" rel="stylesheet">
+    
+    <!-- AOS CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
+    
+    <!-- LightGallery CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/css/lightgallery-bundle.min.css" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Ambient Music Player -->
+    <div class="music-player">
+        <audio id="bg-music" loop>
+            <source src="assets/music/background.mp3" type="audio/mpeg">
+        </audio>
+        <button id="music-btn" aria-label="Play/Pause Music">
+            <svg id="music-icon-play" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="hidden"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            <svg id="music-icon-pause" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+        </button>
+    </div>
+
+    <!-- Mouse Trail Canvas -->
+    <canvas id="mouse-trail"></canvas>
+    
+    <!-- Background Effects -->
+    <div class="bg-effects">
+        <div class="aurora"></div>
+        <div class="stars"></div>
+        <div class="particles"></div>
+    </div>
+
+    <!-- CHAPTER 1: A Surprise -->
+    <section id="chap-surprise" class="fullscreen-section">
+        <div class="surprise-content">
+            <div class="tiny-star"></div>
+            <div class="text-reveal">
+                <p id="typed-surprise-1"></p>
+                <p id="typed-surprise-2" class="mt-4"></p>
+            </div>
+            <button id="btn-begin" class="btn-glow mt-8 hidden">Begin</button>
+        </div>
+    </section>
+
+    <!-- CHAPTER 2: Hero -->
+    <section id="chap-hero" class="fullscreen-section hidden">
+        <div class="hero-content">
+            <div class="hero-frame" data-aos="zoom-in" data-aos-duration="1500">
+                <img src="assets/images/photo1.jpg" alt="Our beautiful moment">
+                <div class="frame-glow"></div>
+            </div>
+            <h1 class="hero-title" data-aos="fade-up" data-aos-delay="500">Happy Girlfriend's Day</h1>
+            <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="800">To the most beautiful soul in my universe.</p>
+        </div>
+    </section>
+
+    <!-- CHAPTER 3: Our Story -->
+    <section id="chap-story" class="padding-section">
+        <h2 class="section-title text-center" data-aos="fade-up">Our Story</h2>
+        <div class="timeline">
+            <!-- Dynamic Timeline Items in JS -->
+        </div>
+        
+        <!-- Special Proposal Section -->
+        <div id="proposal-highlight" class="proposal-container" data-aos="zoom-in">
+            <h3 class="proposal-title">A Promise For Forever</h3>
+            <div class="proposal-card glass-card">
+                <img src="assets/images/photo15.jpg" alt="Our Proposal" id="proposal-img">
+                <p class="proposal-text">The moment my dream came true.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CHAPTER 4: Photo Gallery -->
+    <section id="chap-gallery" class="padding-section">
+        <h2 class="section-title text-center" data-aos="fade-up">Memories We've Built</h2>
+        <div id="lightgallery" class="masonry-gallery">
+            <!-- Dynamic Gallery Items in JS -->
+        </div>
+    </section>
+
+    <!-- CHAPTER 5: Reasons I Love You -->
+    <section id="chap-reasons" class="padding-section">
+        <h2 class="section-title text-center" data-aos="fade-up">Reasons I Love You</h2>
+        <div class="reasons-grid">
+            <!-- Dynamic Reasons in JS -->
+        </div>
+    </section>
+
+    <!-- CHAPTER 6: Love Letter -->
+    <section id="chap-letter" class="fullscreen-section">
+        <div class="envelope-wrapper">
+            <div id="envelope" class="envelope" onclick="openEnvelope()">
+                <div class="envelope-flap"></div>
+                <div class="envelope-body">
+                    <div class="wax-seal">S</div>
+                </div>
+                <div class="letter">
+                    <div class="letter-corners"></div>
+                    <p id="typed-letter" class="handwritten"></p>
+                </div>
+            </div>
+            <p class="instruction-text" id="envelope-instruction">Tap to open</p>
+        </div>
+    </section>
+
+    <!-- CHAPTER 7: Relationship Timer -->
+    <section id="chap-timer" class="fullscreen-section timer-bg">
+        <div class="glass-card timer-card" data-aos="fade-up">
+            <h2 class="timer-title">Time Since Our Forever Began</h2>
+            <div class="timer-grid" id="timer">
+                <div class="time-box"><span id="t-years">0</span><p>Years</p></div>
+                <div class="time-box"><span id="t-months">0</span><p>Months</p></div>
+                <div class="time-box"><span id="t-days">0</span><p>Days</p></div>
+                <div class="time-box"><span id="t-hours">0</span><p>Hours</p></div>
+                <div class="time-box"><span id="t-mins">0</span><p>Minutes</p></div>
+                <div class="time-box"><span id="t-secs">0</span><p>Seconds</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CHAPTER 8: Hidden Messages -->
+    <section id="chap-hidden" class="fullscreen-section relative-section">
+        <h2 class="section-title text-center z-10 relative" data-aos="fade-down">Catch a Star</h2>
+        <p class="text-center z-10 relative text-light">Tap the glowing stars to reveal hidden notes.</p>
+        <div id="hidden-messages-container" class="absolute-container">
+            <!-- Stars generated by JS -->
+        </div>
+        
+        <!-- Modal for notes -->
+        <div id="note-modal" class="modal hidden">
+            <div class="modal-content glass-card">
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+                <p id="modal-text" class="handwritten note-text"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CHAPTER 9: Wish Upon A Star -->
+    <section id="chap-star" class="fullscreen-section dark-sky">
+        <div class="star-wish-content text-center">
+            <div class="star-typed-container">
+                <span id="typed-wish"></span>
+            </div>
+            <div class="constellation-container mt-8">
+                <svg viewBox="0 0 200 200" id="heart-svg" class="hidden">
+                    <path class="draw-path heart-path" d="M 100, 180 
+                             C 100, 180 30, 120 30, 60 
+                             C 30, 30 50, 10 80, 10 
+                             C 95, 10 100, 20 100, 20 
+                             C 100, 20 105, 10 120, 10 
+                             C 150, 10 170, 30 170, 60 
+                             C 170, 120 100, 180 100, 180 Z" />
+                </svg>
+                <div id="her-name-reveal" class="name-reveal hidden"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CHAPTER 10: Finale -->
+    <section id="chap-finale" class="fullscreen-section">
+        <div class="finale-content text-center" data-aos="zoom-in" data-aos-duration="2000">
+            <h1 class="finale-title">Happy Girlfriend's Day 💙</h1>
+            <p class="finale-msg mt-4">
+                Thank you for being my safe place,<br>
+                my happiness,<br>
+                and my favorite person.
+            </p>
+            <p class="finale-sign mt-8 handwritten">Forever Yours,<br><span id="signature-name"></span></p>
+            
+            <button id="btn-replay" class="btn-glow mt-12">Replay Our Story</button>
+        </div>
+    </section>
+
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.39/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.16/typed.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/lightgallery.min.js"></script>
+
+    <!-- Custom Script -->
+    <script src="script.js"></script>
+</body>
+</html>

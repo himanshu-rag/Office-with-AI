@@ -172,6 +172,8 @@ async function runSync() {
                         }
                     }
 
+                    const isRenewalIndirect = renewal.partner && String(renewal.partner).toLowerCase().includes('indirect');
+                    
                     finalRecords.push({
                         partner,
                         partnerEmail,
@@ -184,10 +186,13 @@ async function runSync() {
                         finalSizeIncreased,
                         value,
                         renewalCycle,
-                        renewed_partner: renewal.partner
+                        renewed_partner: renewal.partner,
+                        renewal_type: isRenewalIndirect ? 'Indirect' : 'Direct'
                     });
                 }
             } else {
+                const isBaseIndirect = partner && String(partner).toLowerCase().includes('indirect');
+                
                 finalRecords.push({
                     partner,
                     partnerEmail,
@@ -200,7 +205,8 @@ async function runSync() {
                     finalSizeIncreased: 0,
                     value,
                     renewalCycle,
-                    renewed_partner: null
+                    renewed_partner: null,
+                    renewal_type: isBaseIndirect ? 'Indirect' : 'Direct'
                 });
             }
         }
@@ -217,14 +223,14 @@ async function runSync() {
         for (const r of finalRecords) {
             const query = `
                 INSERT INTO ?? 
-                (partner, partner_email, customer_name, customer_id, backup_storage_gb, activation_date, status, renewal_date, size_increased, value, renewal_cycle_months, renewed_partner) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (partner, partner_email, customer_name, customer_id, backup_storage_gb, activation_date, status, renewal_date, size_increased, value, renewal_cycle_months, renewed_partner, renewal_type) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
             const values = [
                 backupTable,
                 r.partner, r.partnerEmail, r.customerName, r.customerId, r.backupStorage,
                 r.activationDate, r.finalStatus, r.renewalDate, r.finalSizeIncreased,
-                r.value, r.renewalCycle, r.renewed_partner
+                r.value, r.renewalCycle, r.renewed_partner, r.renewal_type
             ];
             
             try {

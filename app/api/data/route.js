@@ -50,7 +50,8 @@ export async function GET(request) {
                 customer_storage: row.customer_storage !== null ? String(row.customer_storage) : '0',
                 value: row.value !== null ? parseFloat(row.value) : null,
                 renewal_cycle_months: row.renewal_cycle_months,
-                renewed_partner: row.renewed_partner
+                renewed_partner: row.renewed_partner,
+                renewal_type: row.renewal_type || 'Direct'
             });
         }
 
