@@ -1,0 +1,35 @@
+[
+  {"command": "add", "path": "/", "type": "slide"},
+  {"command": "set", "path": "/slide[1]", "props": {"background": "F8FAFC"}},
+  {"command": "add", "path": "/slide[1]", "type": "shape", "props": {"text": "SMART PROCUREMENT &\nFARMER ASSISTANCE PLATFORM", "x": "0.5in", "y": "0.5in", "width": "9in", "height": "1.5in", "font": "Arial", "size": "36pt", "bold": "true", "color": "1E3A8A", "align": "center"}},
+  {"command": "add", "path": "/slide[1]", "type": "shape", "props": {"text": "Team: Farm Tech  |  Problem ID: 26032\nMinistry of Consumer Affairs", "x": "0.5in", "y": "2.2in", "width": "9in", "height": "0.8in", "font": "Arial", "size": "20pt", "color": "047857", "align": "center"}},
+  {"command": "add", "path": "/slide[1]", "type": "picture", "props": {"src": "/Users/himanshu_rags/.gemini/antigravity/brain/a67f5747-d5fb-47d2-8341-1d9be8630f89/farmer_mobile_1788370736588.jpg", "x": "3in", "y": "3.3in", "width": "4in", "height": "4in"}},
+
+  {"command": "add", "path": "/", "type": "slide"},
+  {"command": "set", "path": "/slide[2]", "props": {"background": "F8FAFC"}},
+  {"command": "add", "path": "/slide[2]", "type": "shape", "props": {"text": "PROPOSED SOLUTION", "x": "0.5in", "y": "0.5in", "width": "9in", "height": "0.8in", "font": "Arial", "size": "32pt", "bold": "true", "color": "1E3A8A"}},
+  {"command": "add", "path": "/slide[2]", "type": "shape", "props": {"text": "• Register & Select Centre\n\n• Book a Slot & Get Digital Token\n\n• Track Live Queue & ETA\n\n• Real-Time Payment Updates", "x": "0.5in", "y": "1.5in", "width": "5in", "height": "5in", "font": "Arial", "size": "24pt", "color": "333333", "valign": "middle"}},
+  {"command": "add", "path": "/slide[2]", "type": "picture", "props": {"src": "/Users/himanshu_rags/.gemini/antigravity/brain/a67f5747-d5fb-47d2-8341-1d9be8630f89/queue_app_1788370769215.jpg", "x": "5.5in", "y": "1.5in", "width": "4in", "height": "4in"}},
+
+  {"command": "add", "path": "/", "type": "slide"},
+  {"command": "set", "path": "/slide[3]", "props": {"background": "F8FAFC"}},
+  {"command": "add", "path": "/slide[3]", "type": "shape", "props": {"text": "TECHNICAL APPROACH", "x": "0.5in", "y": "0.5in", "width": "9in", "height": "0.8in", "font": "Arial", "size": "32pt", "bold": "true", "color": "1E3A8A"}},
+  {"command": "add", "path": "/slide[3]", "type": "shape", "props": {"text": "Farmer App:\nFlutter\n\nAdmin Dashboard:\nReact.js\n\nBackend:\nPython + FastAPI", "x": "0.5in", "y": "2in", "width": "3in", "height": "4in", "font": "Arial", "size": "22pt", "bold": "true", "color": "047857"}},
+  {"command": "add", "path": "/slide[3]", "type": "shape", "props": {"text": "Database:\nPostgreSQL\n\nReal-Time Queue:\nRedis / WebSockets\n\nNotifications:\nFirebase & SMS", "x": "4in", "y": "2in", "width": "3in", "height": "4in", "font": "Arial", "size": "22pt", "bold": "true", "color": "047857"}},
+
+  {"command": "add", "path": "/", "type": "slide"},
+  {"command": "set", "path": "/slide[4]", "props": {"background": "F8FAFC"}},
+  {"command": "add", "path": "/slide[4]", "type": "shape", "props": {"text": "FEASIBILITY & INNOVATION", "x": "0.5in", "y": "0.5in", "width": "9in", "height": "0.8in", "font": "Arial", "size": "32pt", "bold": "true", "color": "1E3A8A"}},
+  {"command": "add", "path": "/slide[4]", "type": "shape", "props": {"text": "AI-Assisted Smart Slot Recommendation\n\n• Predicts Crowd Density\n\n• Recommends Less Crowded Times\n\n• Ensures Zero Congestion", "x": "0.5in", "y": "1.5in", "width": "4.5in", "height": "5in", "font": "Arial", "size": "24pt", "color": "333333", "valign": "middle"}},
+  {"command": "add", "path": "/slide[4]", "type": "picture", "props": {"src": "/Users/himanshu_rags/.gemini/antigravity/brain/a67f5747-d5fb-47d2-8341-1d9be8630f89/ai_booking_1788370755071.jpg", "x": "5.5in", "y": "1.5in", "width": "4in", "height": "4in"}},
+
+  {"command": "add", "path": "/", "type": "slide"},
+  {"command": "set", "path": "/slide[5]", "props": {"background": "F8FAFC"}},
+  {"command": "add", "path": "/slide[5]", "type": "shape", "props": {"text": "IMPACT AND BENEFITS", "x": "0.5in", "y": "0.5in", "width": "9in", "height": "0.8in", "font": "Arial", "size": "32pt", "bold": "true", "color": "1E3A8A"}},
+  {"command": "add", "path": "/slide[5]", "type": "shape", "props": {"text": "For Farmers:\n• No more waiting in long lines\n• Transparent tracking of payment\n• Accessible via Mobile App & SMS\n\nFor Government:\n• Efficient capacity management\n• Data-driven procurement planning", "x": "0.5in", "y": "1.8in", "width": "9in", "height": "4.5in", "font": "Arial", "size": "26pt", "color": "333333"}},
+
+  {"command": "add", "path": "/", "type": "slide"},
+  {"command": "set", "path": "/slide[6]", "props": {"background": "F8FAFC"}},
+  {"command": "add", "path": "/slide[6]", "type": "shape", "props": {"text": "RESEARCH AND REFERENCES", "x": "0.5in", "y": "0.5in", "width": "9in", "height": "0.8in", "font": "Arial", "size": "32pt", "bold": "true", "color": "1E3A8A"}},
+  {"command": "add", "path": "/slide[6]", "type": "shape", "props": {"text": "• Studied existing systems: Kisaan E-Mandi, MandiMithra, AgriSakha\n\n• Built custom workflow tailored for Department of Consumer Affairs (DoCA)\n\n• Future-proof architecture ready for integration with existing Govt portals", "x": "0.5in", "y": "2in", "width": "9in", "height": "4in", "font": "Arial", "size": "26pt", "color": "333333"}}
+]
