@@ -1,350 +1,405 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Buildings, Lightning } from '@phosphor-icons/react';
-import { useCompany } from '@/lib/hooks/use-company';
+import { Plus, PencilSimple, DotsSix, ArrowsOut, ArrowsLeftRight, CaretDown, Sun, Trash, Buildings, User, CheckCircle } from '@phosphor-icons/react';
 
-function WorkstationPod({ x, y }: { x: number, y: number }) {
-  return (
-    <g>
-      {/* 4 desks */}
-      <rect x={x} y={y} width={96} height={45} className="office-desk" />
-      <rect x={x + 96} y={y} width={96} height={45} className="office-desk" />
-      <rect x={x} y={y + 45} width={96} height={45} className="office-desk" />
-      <rect x={x + 96} y={y + 45} width={96} height={45} className="office-desk" />
-      
-      {/* 4 chairs */}
-      <circle cx={x + 48} cy={y - 18} r={16} className="office-chair" />
-      <circle cx={x + 144} cy={y - 18} r={16} className="office-chair" />
-      <circle cx={x + 48} cy={y + 108} r={16} className="office-chair" />
-      <circle cx={x + 144} cy={y + 108} r={16} className="office-chair" />
-      
-      {/* 4 screens glowing */}
-      <rect x={x + 32} y={y + 8} width={32} height={4} className="office-screen" filter="url(#glow)" />
-      <rect x={x + 128} y={y + 8} width={32} height={4} className="office-screen" filter="url(#glow)" />
-      <rect x={x + 32} y={y + 78} width={32} height={4} className="office-screen" filter="url(#glow)" />
-      <rect x={x + 128} y={y + 78} width={32} height={4} className="office-screen" filter="url(#glow)" />
-    </g>
-  );
+interface DepartmentSlot {
+  id: string;
+  deptName: string | null;
+  img: string;
+  agent: { name: string; role: string; avatar: string; status: string } | null;
 }
 
-export default function OfficeSimulatorPage() {
-  const { companyId, loading: companyLoading } = useCompany();
-  const [agents, setAgents] = useState<any[]>([]);
-  const [activities, setActivities] = useState<any[]>([]);
-  const [mounted, setMounted] = useState(false);
-  const [hoveredAgentId, setHoveredAgentId] = useState<string | null>(null);
-  const [credits, setCredits] = useState(0);
 
-  useEffect(() => {
-    setMounted(true);
-    if (companyLoading || !companyId) return;
+const PREDEFINED_DEPARTMENTS = [
+  { name: 'Strategy',       img: '/rooms/strategy.jpg',    defaultRole: 'Strategy Specialist', avatar: '🧭' },
+  { name: 'Engineering',   img: '/rooms/engineering.jpg', defaultRole: 'Software Engineer',    avatar: '💻' },
+  { name: 'Marketing',     img: '/rooms/marketing.jpg',   defaultRole: 'Growth Marketer',     avatar: '📣' },
+  { name: 'Design Studio',  img: '/rooms/design.jpg',      defaultRole: 'Product Designer',    avatar: '🎨' },
+  { name: 'Data Analytics', img: '/rooms/analytics.jpg',   defaultRole: 'Data Scientist',      avatar: '📊' },
+  { name: 'QA & Testing',   img: '/rooms/qa.jpg',          defaultRole: 'QA Specialist',       avatar: '🧪' },
+  { name: 'Research & Dev', img: '/rooms/research.jpg',    defaultRole: 'R&D Researcher',      avatar: '🔬' },
+  { name: 'Operations',     img: '/rooms/operations.jpg',  defaultRole: 'Ops Specialist',      avatar: '⚙️' },
+  { name: 'Coffee Lounge',  img: '/rooms/coffee.jpg',      defaultRole: 'Community Lead',      avatar: '☕' },
+];
 
-    fetch(`/api/os/floorplan`)
-      .then(r => r.json())
-      .then(data => {
-        if (data.agents) {
-          setAgents(data.agents);
-          setCredits(Math.max(10, data.agents.length * 28.50));
-        }
-      });
-  }, [companyId, companyLoading]);
+const INITIAL_SLOTS: DepartmentSlot[] = [
+  { id: 'slot-1', deptName: 'Strategy',       img: '/rooms/strategy.jpg',    agent: { name: 'Sam', role: 'Strategy Lead', avatar: '🧭', status: 'working' } },
+  { id: 'slot-2', deptName: 'AI CEO Suite',   img: '/rooms/ceo.jpg',         agent: { name: 'CEO Alex', role: 'Chief Executive', avatar: '👑', status: 'working' } },
+  { id: 'slot-3', deptName: 'Engineering',   img: '/rooms/engineering.jpg', agent: { name: 'Linus', role: 'Backend Lead', avatar: '💻', status: 'waiting' } },
+  { id: 'slot-4', deptName: 'Marketing',     img: '/rooms/marketing.jpg',   agent: { name: 'Mia', role: 'Growth Marketer', avatar: '📣', status: 'working' } },
+  { id: 'slot-5', deptName: 'Design Studio',  img: '/rooms/design.jpg',      agent: { name: 'Jony', role: 'Product Designer', avatar: '🎨', status: 'working' } },
+  { id: 'slot-6', deptName: 'Data Analytics', img: '/rooms/analytics.jpg',   agent: { name: 'Sarah', role: 'Data Scientist', avatar: '📊', status: 'coffee' } },
+  { id: 'slot-7', deptName: null,            img: '/rooms/empty_space.jpg', agent: null },
+  { id: 'slot-8', deptName: 'QA & Testing',   img: '/rooms/qa.jpg',          agent: { name: 'Agent Q', role: 'QA Engineer', avatar: '🧪', status: 'working' } },
+  { id: 'slot-9', deptName: null,            img: '/rooms/empty_space.jpg', agent: null },
+];
 
-  useEffect(() => {
-    if (!mounted || agents.length === 0) return;
-    const interval = setInterval(() => {
-      setAgents(current => current.map(agent => {
-        if (Math.random() > 0.85 && !agent.is_ceo) {
-          const newStatus = agent.status === 'working' ? 'recharging' : 'working';
-          setActivities(prev => [{
-            id: Date.now().toString() + Math.random().toString(),
-            text: `${agent.name} went to ${newStatus === 'recharging' ? 'the breakroom' : 'their desk'}`,
-            time: 'Just now'
-          }, ...prev].slice(0, 8));
-          return { ...agent, status: newStatus };
-        }
-        return agent;
-      }));
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [mounted, agents.length]);
+export default function ModularOfficePage() {
+  const [slots, setSlots] = useState<DepartmentSlot[]>(INITIAL_SLOTS);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+  const [newDeptName, setNewDeptName] = useState('');
+  const [newAgentName, setNewAgentName] = useState('');
+  const [selectedForSwap, setSelectedForSwap] = useState<string | null>(null);
+  const officeRef = useRef<HTMLDivElement>(null);
 
-  const uniqueDepts = useMemo(() => {
-    const d = new Set<string>();
-    agents.forEach(a => { if (!a.is_ceo && a.department_name) d.add(a.department_name); });
-    return Array.from(d);
-  }, [agents]);
+  // Filter active departments count
+  const activeDepartmentsCount = slots.filter(s => s.deptName !== null).length;
+  const activeAgentsCount = slots.filter(s => s.agent !== null).length;
 
-  const zoneNames = [
-     uniqueDepts[0] || 'Unassigned Space',
-     uniqueDepts[1] || 'Unassigned Space',
-     uniqueDepts[2] || 'Unassigned Space'
-  ];
 
-  const agentPositions = useMemo(() => {
-    const SLOTS = {
-      ceo: [ { x: 208, y: 216 } ],
-      conference: [
-        { x: 608, y: 108 }, { x: 688, y: 108 }, { x: 768, y: 108 }, { x: 848, y: 108 },
-        { x: 608, y: 270 }, { x: 688, y: 270 }, { x: 768, y: 270 }, { x: 848, y: 270 }
-      ],
-      zone0: [
-        { x: 528, y: 428 }, { x: 624, y: 428 }, { x: 528, y: 562 }, { x: 624, y: 562 },
-        { x: 528, y: 653 }, { x: 624, y: 653 }, { x: 528, y: 787 }, { x: 624, y: 787 }
-      ],
-      zone1: [
-        { x: 912, y: 428 }, { x: 1008, y: 428 }, { x: 912, y: 562 }, { x: 1008, y: 562 },
-        { x: 912, y: 653 }, { x: 1008, y: 653 }, { x: 912, y: 787 }, { x: 1008, y: 787 }
-      ],
-      zone2: [
-        { x: 1296, y: 428 }, { x: 1392, y: 428 }, { x: 1296, y: 562 }, { x: 1392, y: 562 },
-        { x: 1296, y: 653 }, { x: 1392, y: 653 }, { x: 1296, y: 787 }, { x: 1392, y: 787 }
-      ],
-      recharging: [
-        { x: 160, y: 495 }, { x: 96, y: 558 }, { x: 224, y: 558 },
-        { x: 160, y: 630 }, { x: 96, y: 693 }, { x: 224, y: 693 },
-        { x: 304, y: 540 }, { x: 304, y: 594 }
-      ]
-    };
-
-    const posRecord: Record<string, {x: number, y: number}> = {};
-    const usedSlots = { ceo: 0, conference: 0, zone0: 0, zone1: 0, zone2: 0, recharging: 0 };
+  const handleSlotClick = (slotId: string) => {
+    if (!isEditMode) return;
     
-    agents.forEach(a => {
-      let region: keyof typeof SLOTS = 'zone0';
-      if (a.status === 'working') {
-        if (a.is_ceo) region = 'ceo';
-        else if (a.department_name?.toLowerCase().includes('strat') || a.department_name?.toLowerCase().includes('market')) {
-          region = 'conference';
-        } else {
-          if (a.department_name === zoneNames[1]) region = 'zone1';
-          else if (a.department_name === zoneNames[2]) region = 'zone2';
-          else region = 'zone0';
-        }
-      } else {
-        region = 'recharging';
+    if (!selectedForSwap) {
+      setSelectedForSwap(slotId);
+    } else {
+      if (selectedForSwap === slotId) {
+        setSelectedForSwap(null); // deselect
+        return;
       }
+      // Perform swap
+      setSlots(prev => {
+        const newSlots = [...prev];
+        const sourceIdx = newSlots.findIndex(s => s.id === selectedForSwap);
+        const targetIdx = newSlots.findIndex(s => s.id === slotId);
+        
+        const temp = newSlots[sourceIdx];
+        newSlots[sourceIdx] = newSlots[targetIdx];
+        newSlots[targetIdx] = temp;
+        return newSlots;
+      });
+      setSelectedForSwap(null);
+    }
+  };
 
-      const availableSlots = SLOTS[region];
-      const slotIndex = usedSlots[region] % availableSlots.length;
-      posRecord[a.id] = availableSlots[slotIndex];
-      usedSlots[region]++;
-    });
+  const toggleFullScreen = () => {
 
-    return posRecord;
-  }, [agents, zoneNames]);
+    if (!document.fullscreenElement) {
+      officeRef.current?.requestFullscreen().catch(err => {
+        alert(`Error attempting to enable full-screen mode: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
 
-  if (!mounted) return null;
+  const handleOpenAddModal = (slotId?: string) => {
+    // If a specific slot wasn't clicked, pick the first empty slot
+    const targetSlot = slotId || slots.find(s => s.deptName === null)?.id || null;
+    setSelectedSlotId(targetSlot);
+    setNewDeptName('');
+    setNewAgentName('');
+    setShowAddModal(true);
+  };
+
+  const handleCreateDepartment = (e: React.FormEvent) => {
+    e.preventDefault();
+    const selectedDept = PREDEFINED_DEPARTMENTS.find(d => d.name === newDeptName) || PREDEFINED_DEPARTMENTS[0];
+
+    const targetId = selectedSlotId || slots.find(s => s.deptName === null)?.id;
+    if (!targetId) return;
+
+    setSlots(prev => prev.map(slot => {
+      if (slot.id === targetId) {
+        return {
+          ...slot,
+          deptName: selectedDept.name,
+          img: selectedDept.img,
+          agent: {
+            name: newAgentName.trim() || `Agent ${selectedDept.name.split(' ')[0]}`,
+            role: selectedDept.defaultRole,
+            avatar: selectedDept.avatar,
+            status: 'working'
+          }
+        };
+      }
+      return slot;
+    }));
+
+    setShowAddModal(false);
+  };
+
+  const handleRemoveDepartment = (slotId: string) => {
+    setSlots(prev => prev.map(slot => {
+      if (slot.id === slotId) {
+        return {
+          ...slot,
+          deptName: null,
+          img: '/rooms/empty_space.jpg',
+          agent: null
+        };
+      }
+      return slot;
+    }));
+  };
 
   return (
-    <div className="flex h-full bg-transparent overflow-hidden font-sans">
-      <div className="flex-1 flex flex-col p-6 relative">
-        <header className="mb-6 flex justify-between items-end relative z-20">
-          <div>
-            <h1 className="text-3xl font-medium text-white tracking-tight flex items-center gap-3">
-              <Buildings weight="fill" className="text-white/80" /> Digital Office
-            </h1>
-            <p className="text-white/50 text-sm mt-1 font-medium tracking-wide">Live Campus Simulator</p>
-          </div>
-          <div className="flex items-center gap-8 bg-white/5 backdrop-blur-2xl border border-white/10 px-6 py-4 rounded-3xl shadow-2xl">
-            <div className="text-center">
-              <div className="text-[10px] text-white/40 uppercase tracking-widest font-semibold mb-1">Active Agents</div>
-              <div className="text-xl font-medium text-white">{agents.filter(a => a.status === 'working').length} <span className="text-white/30 text-sm">/ {Math.max(1, agents.length)}</span></div>
+    <div className="flex-1 flex flex-col h-full bg-background relative overflow-y-auto custom-scrollbar font-serif">
+      
+      {/* TOP BAR */}
+      <header className="flex items-center justify-between px-8 py-5 border-b border-border-main bg-surface shadow-xs shrink-0">
+        <div>
+          <h1 className="text-3xl font-serif font-bold text-text-main tracking-tight">Office Floor Plan</h1>
+          <p className="text-xs font-sans text-text-muted mt-0.5">
+            Modular 3D Isometric View &bull; <span className="font-semibold text-accent-main">{activeDepartmentsCount} Active Departments</span> &bull; {activeAgentsCount} Agents On Duty
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 font-sans">
+          <button 
+            onClick={() => { console.log("Toggling edit mode", !isEditMode); setIsEditMode(!isEditMode); }} 
+            className={`flex items-center gap-2 border border-border-main rounded-lg px-4 py-2 shadow-sm font-semibold text-sm transition ${isEditMode ? 'bg-accent-main text-white border-accent-main' : 'bg-surface text-text-main hover:bg-surface-2'}`}
+          >
+            <PencilSimple size={16} />
+            {isEditMode ? 'Done Editing' : 'Customize Layout'}
+          </button>
+          <button 
+            onClick={() => handleOpenAddModal()} 
+            className="flex items-center gap-2 rounded-lg px-5 py-2 bg-accent-main text-white font-semibold text-sm shadow-sm hover:bg-accent-hover transition"
+          >
+            <Plus size={16} weight="bold" /> Add Department
+          </button>
+        </div>
+      </header>
+
+      {/* MAIN CONTENT WORKSPACE */}
+      <div className="flex-1 p-8 flex gap-8 items-start justify-center">
+        
+        {/* MODULAR 3D FLOOR PLAN GRID CONTAINER */}
+        <div 
+          ref={officeRef} 
+          className="flex-1 max-w-5xl bg-surface border-2 border-border-main rounded-2xl p-6 shadow-xl relative overflow-hidden"
+        >
+          {/* Header Indicator */}
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-border-soft font-sans">
+            <div className="flex items-center gap-2">
+              <Buildings size={20} className="text-accent-main" />
+              <span className="font-bold text-sm text-text-main uppercase tracking-wider font-serif">Level 1 — Main Headquarters</span>
             </div>
-            <div className="w-px h-8 bg-white/10"></div>
-            <div className="text-center">
-              <div className="text-[10px] text-white/40 uppercase tracking-widest font-semibold mb-1">Compute Credits</div>
-              <div className="text-xl font-medium text-white">${credits.toFixed(2)}</div>
-            </div>
+            {isEditMode && (
+              <span className="text-xs px-3 py-1 rounded-full bg-accent-main/10 text-accent-main font-semibold border border-accent-main/30 animate-pulse">
+                &bull; Edit Mode: Click a room to select, then click another to Swap them!
+              </span>
+            )}
           </div>
-        </header>
 
-        <div className="flex-1 w-full h-full relative flex items-center justify-center">
-          <div className="w-full relative rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-white/5 bg-[#070b14]" style={{ aspectRatio: '16/9', maxHeight: '100%' }}>
-            
-            <svg viewBox="0 0 1600 900" className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
-              <style>
-                {`
-                  .office-wall { fill: rgba(255,255,255,0.02); stroke: rgba(255,255,255,0.05); stroke-width: 2px; rx: 20px; }
-                  .glass-wall { stroke: rgba(255,255,255,0.1); stroke-width: 2px; stroke-dasharray: 8 8; }
-                  .office-desk { fill: rgba(15,23,42,0.6); stroke: rgba(56,189,248,0.15); stroke-width: 1.5px; rx: 6px; }
-                  .office-chair { fill: rgba(30,41,59,0.8); stroke: rgba(56,189,248,0.1); stroke-width: 1px; }
-                  .office-screen { fill: #38bdf8; }
-                  .office-table { fill: rgba(15,23,42,0.6); stroke: rgba(56,189,248,0.15); stroke-width: 1.5px; rx: 24px; }
-                  .office-server { fill: rgba(15,23,42,0.8); stroke: rgba(56,189,248,0.2); stroke-width: 1.5px; rx: 4px; }
-                  .server-led { fill: #22c55e; }
-                  .office-text { fill: rgba(255,255,255,0.2); font-size: 18px; font-weight: 600; letter-spacing: 0.25em; text-transform: uppercase; font-family: system-ui, sans-serif; }
-                `}
-              </style>
-
-              <defs>
-                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
-              </defs>
-
-              {/* CEO Suite */}
-              <rect x="32" y="36" width="352" height="315" className="office-wall" />
-              <text x="208" y="315" textAnchor="middle" className="office-text">CEO Suite</text>
-              <rect x="128" y="135" width="160" height="54" className="office-table" />
-              <circle cx="208" cy="216" r="24" className="office-chair" />
-              <circle cx="160" cy="99" r="24" className="office-chair" />
-              <circle cx="256" cy="99" r="24" className="office-chair" />
-              <rect x="160" y="144" width="96" height="5" className="office-screen" filter="url(#glow)" />
-
-              {/* Conference Room */}
-              <rect x="416" y="36" width="720" height="315" className="office-wall" />
-              <text x="776" y="315" textAnchor="middle" className="office-text">Strategy Boardroom</text>
-              <rect x="560" y="135" width="416" height="108" className="office-table" />
-              {[608,688,768,848].map(x => (
-                <g key={`conf-top-${x}`}>
-                  <circle cx={x} cy="108" r="18" className="office-chair" />
-                  <circle cx={x} cy="270" r="18" className="office-chair" />
-                </g>
-              ))}
-
-              {/* Server Room */}
-              <rect x="1168" y="36" width="400" height="315" className="office-wall" />
-              <text x="1368" y="315" textAnchor="middle" className="office-text">Datacenter</text>
-              {[1216, 1328, 1440].map(x => (
-                <g key={`server-${x}`}>
-                  <rect x={x} y="90" width="64" height="180" className="office-server" />
-                </g>
-              ))}
-              {/* Server LEDs */}
-              {[110, 140, 170, 200, 230].map(y => (
-                <g key={y}>
-                  <rect x="1232" y={y} width="12" height="4" className="server-led" filter="url(#glow)" />
-                  <rect x="1344" y={y} width="12" height="4" className="server-led" filter="url(#glow)" />
-                  <rect x="1456" y={y} width="12" height="4" className="server-led" filter="url(#glow)" />
-                </g>
-              ))}
-
-              {/* Cafeteria / Breakroom */}
-              <rect x="32" y="378" width="352" height="486" className="office-wall" />
-              <text x="208" y="828" textAnchor="middle" className="office-text">Cafeteria</text>
-              <rect x="32" y="378" width="240" height="45" className="office-table" rx="4" />
-              
-              <circle cx="160" cy="540" r="48" className="office-table" />
-              <circle cx="160" cy="495" r="18" className="office-chair" />
-              <circle cx="96" cy="558" r="18" className="office-chair" />
-              <circle cx="224" cy="558" r="18" className="office-chair" />
-              
-              <circle cx="160" cy="675" r="48" className="office-table" />
-              <circle cx="160" cy="630" r="18" className="office-chair" />
-              <circle cx="96" cy="693" r="18" className="office-chair" />
-              <circle cx="224" cy="693" r="18" className="office-chair" />
-              
-              <rect x="288" y="522" width="48" height="108" className="office-table" rx="8" />
-
-              {/* Workspace Zones Container */}
-              <rect x="416" y="378" width="1152" height="486" className="office-wall" />
-              
-              {/* Internal Partitions */}
-              <line x1="800" y1="378" x2="800" y2="864" className="glass-wall" />
-              <line x1="1184" y1="378" x2="1184" y2="864" className="glass-wall" />
-
-              {/* Dynamic Department Labels */}
-              <text x="608" y="828" textAnchor="middle" className="office-text">{zoneNames[0]}</text>
-              <text x="992" y="828" textAnchor="middle" className="office-text">{zoneNames[1]}</text>
-              <text x="1376" y="828" textAnchor="middle" className="office-text">{zoneNames[2]}</text>
-              
-              {/* Workstation Pods */}
-              <WorkstationPod x={480} y={450} />
-              <WorkstationPod x={480} y={675} />
-              <WorkstationPod x={864} y={450} />
-              <WorkstationPod x={864} y={675} />
-              <WorkstationPod x={1248} y={450} />
-              <WorkstationPod x={1248} y={675} />
-
-            </svg>
-
-            {/* Agents Overlay layer */}
-            {agents.map(agent => {
-              const pos = agentPositions[agent.id] || { x: 800, y: 450 };
-              const isHovered = hoveredAgentId === agent.id;
+          {/* 3X3 MODULAR GRID OF ROOM TILES */}
+          <div className="grid grid-cols-3 gap-5">
+            {slots.map((slot) => {
+              const isActive = slot.deptName !== null;
 
               return (
-                <motion.div
-                  key={agent.id}
-                  initial={false}
-                  animate={{ left: `${(pos.x / 1600) * 100}%`, top: `${(pos.y / 900) * 100}%` }}
-                  transition={{ type: "spring", damping: 25, stiffness: 80, mass: 1 }}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 z-10"
-                  onMouseEnter={() => setHoveredAgentId(agent.id)}
-                  onMouseLeave={() => setHoveredAgentId(null)}
+                <div 
+                  key={slot.id}
+                  onClick={() => handleSlotClick(slot.id)}
+                  style={{ height: "240px", minHeight: "240px" }} 
+                  className={`group relative rounded-xl overflow-hidden border-2 transition-all duration-300 ${isEditMode ? 'cursor-pointer' : ''} ${selectedForSwap === slot.id ? 'ring-4 ring-blue-500 scale-[1.02] z-20 shadow-2xl' : ''} ${
+                    isActive 
+                      ? 'border-border-main shadow-md hover:shadow-xl hover:border-accent-main' 
+                      : 'border-dashed border-border-main/60 bg-surface-2/50 hover:border-accent-main/60'
+                  }`}
                 >
-                  <motion.div layout className="relative flex flex-col items-center cursor-pointer group">
-                    {/* Ultra-Premium Agent Avatar */}
-                    <div className={`relative flex items-center justify-center w-8 h-8 rounded-full border shadow-xl transition-transform group-hover:scale-110 ${
-                      agent.status === 'working' 
-                        ? 'bg-[#0ea5e9]/20 border-[#0ea5e9] text-white shadow-[0_0_20px_rgba(14,165,233,0.4)]' 
-                        : 'bg-white/5 border-white/20 text-white/50'
-                    }`}>
-                      <span className="text-sm drop-shadow-md">{agent.avatar_emoji || agent.name.charAt(0).toUpperCase()}</span>
-                      
-                      {/* Status Dot */}
-                      <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[#070b14] ${
-                        agent.status === 'working' ? 'bg-emerald-400' : 'bg-amber-400'
-                      }`} />
-                    </div>
-                    
-                    {/* Permanent Premium Name Label */}
-                    <div className={`mt-2 bg-[#020617]/80 backdrop-blur-md border border-white/10 px-2 py-0.5 rounded-full text-[9px] font-medium tracking-wider uppercase whitespace-nowrap shadow-xl transition-colors ${
-                      agent.status === 'working' ? 'text-white' : 'text-white/40'
-                    }`}>
-                      {agent.name}
-                    </div>
+                  {/* Background 3D Room Image */}
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                    style={{ backgroundImage: `url('${slot.img}')` }}
+                  />
 
-                    <AnimatePresence>
-                      {isHovered && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 5, scale: 0.9 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 5, scale: 0.9, transition: { duration: 0.1 } }}
-                          className="absolute top-14 bg-white text-black px-3 py-1.5 rounded-lg text-xs font-bold tracking-wide whitespace-nowrap shadow-2xl z-20"
-                        >
-                          {agent.name}
-                          <div className="text-[10px] text-black/50 uppercase mt-0.5 font-semibold">
-                            {agent.status === 'working' ? agent.role : 'On Break'}
+                  {/* Dark vignette overlay for contrast */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+
+                  {/* ACTIVE DEPARTMENT TILE */}
+                  {isActive ? (
+                    <div className="absolute inset-0 p-3 flex flex-col justify-between z-10">
+                      {/* Top Header: Department Name + Remove Action */}
+                      <div className="flex items-start justify-between">
+                        <div className="bg-surface/90 backdrop-blur-xs border border-border-main px-3 py-1 rounded-md shadow-sm">
+                          <span className="font-serif font-bold text-xs text-text-main tracking-wide">
+                            {slot.deptName}
+                          </span>
+                        </div>
+
+                        {isEditMode && (
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleRemoveDepartment(slot.id); }}
+                            className="bg-red-600 text-white p-1.5 rounded-md hover:bg-red-700 shadow-md transition"
+                            title="Remove Department"
+                          >
+                            <Trash size={14} />
+                          </button>
                           </div>
-                          <div className="absolute -top-1 left-1/2 -translate-x-1/2 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-white" />
-                        </motion.div>
+                        )}
+                      </div>
+
+                      {/* Bottom Agent Status Pill */}
+                      {slot.agent && (
+                        <div className="bg-surface/95 backdrop-blur-md border border-border-main p-2 rounded-lg shadow-md flex items-center gap-2.5 font-sans">
+                          <div className="w-7 h-7 rounded-full bg-accent-main/20 border border-accent-main flex items-center justify-center text-sm shrink-0">
+                            {slot.agent.avatar}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-xs text-text-main truncate">{slot.agent.name}</span>
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                            </div>
+                            <span className="text-[10px] text-text-muted truncate block">{slot.agent.role}</span>
+                          </div>
+                        </div>
                       )}
-                    </AnimatePresence>
-                  </motion.div>
-                </motion.div>
+                    </div>
+                  ) : (
+                    /* EMPTY SPACE TILE */
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10 bg-surface/40 backdrop-blur-[2px]">
+                      <div className="bg-surface/90 border border-border-main rounded-xl p-4 shadow-sm flex flex-col items-center max-w-[200px] w-full font-sans">
+                        <span className="text-xs font-serif font-bold text-text-muted mb-1 uppercase tracking-wider">Available Slot</span>
+                        <p className="text-[11px] text-text-muted mb-3">No department assigned</p>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleOpenAddModal(slot.id); }}
+                          className="w-full py-1.5 px-3 bg-accent-main hover:bg-accent-hover text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-sm"
+                        >
+                          <Plus size={14} /> Add Dept
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
         </div>
-      </div>
-      
-      {/* Sidebar restored to ultra-premium glassmorphism */}
-      <div className="w-80 border-l border-white/5 bg-[#030305] flex flex-col relative z-20">
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="p-5 pb-3">
-            <h3 className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] flex items-center gap-2">
-              <Lightning weight="fill" className="text-[#0ea5e9] text-sm" /> Campus Activity
-            </h3>
+
+        {/* RIGHT SIDEBAR PANEL */}
+        <aside className="w-80 flex flex-col gap-6 shrink-0 font-sans">
+          
+          {/* Quick Actions Panel */}
+          <div className="bg-surface-2 border border-border-main rounded-xl p-5 shadow-sm">
+            <h2 className="text-xl font-serif font-bold text-text-main mb-4">Quick Actions</h2>
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={() => handleOpenAddModal()} 
+                className="flex items-center justify-center gap-2 rounded-lg py-3 bg-accent-main text-white font-semibold text-sm shadow-sm hover:bg-accent-hover transition w-full font-serif"
+              >
+                <Plus size={16} /> Add Department
+              </button>
+              <button 
+                onClick={() => { console.log("Toggling edit mode", !isEditMode); setIsEditMode(!isEditMode); }} 
+                className={`flex items-center gap-3 rounded-lg px-4 py-3 border text-sm font-semibold transition w-full shadow-sm font-serif ${isEditMode ? 'bg-accent-main text-white border-accent-main' : 'bg-surface border-border-main text-text-main hover:bg-border-soft'}`}
+              >
+                <PencilSimple size={16} className={isEditMode ? "text-white" : "text-text-muted"} /> 
+                {isEditMode ? 'Done Customizing' : 'Customize Layout'}
+              </button>
+              <button 
+                onClick={() => { console.log("Toggling edit mode", !isEditMode); setIsEditMode(!isEditMode); }} 
+                className="flex items-center gap-3 rounded-lg px-4 py-3 bg-surface border border-border-main text-text-main font-semibold text-sm hover:bg-border-soft transition w-full shadow-sm font-serif"
+              >
+                <ArrowsLeftRight size={16} className="text-text-muted" /> Rearrange Grid
+              </button>
+              <button 
+                onClick={toggleFullScreen} 
+                className="flex items-center gap-3 rounded-lg px-4 py-3 bg-surface border border-border-main text-text-main font-semibold text-sm hover:bg-border-soft transition w-full shadow-sm font-serif"
+              >
+                <ArrowsOut size={16} className="text-text-muted" /> View Full Screen
+              </button>
+            </div>
           </div>
-          <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
-            <AnimatePresence initial={false}>
-              {activities.length === 0 && (
-                <div className="text-center text-white/20 text-xs py-10">Monitoring campus...</div>
-              )}
-              {activities.map((act) => (
-                <motion.div key={act.id} initial={{ opacity: 0, y: -10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} className="bg-white/5 border border-white/10 p-3 rounded-2xl shadow-sm backdrop-blur-sm">
-                  <p className="text-xs text-white/80 leading-relaxed mb-1.5">{act.text}</p>
-                  <p className="text-[9px] font-bold text-[#0ea5e9] uppercase tracking-wider">{act.time}</p>
-                </motion.div>
+
+          {/* Floor Overview Mini-map */}
+          <div className="bg-surface-2 border border-border-main rounded-xl p-5 shadow-sm">
+            <h2 className="text-xl font-serif font-bold text-text-main mb-4">Floor Overview</h2>
+            <div className="grid grid-cols-3 gap-2 bg-surface p-3 rounded-lg border border-border-main">
+              {slots.map((slot, i) => (
+                <div 
+                  key={i} 
+                  className={`h-10 rounded-md border flex items-center justify-center transition ${
+                    slot.deptName 
+                      ? 'bg-accent-main/20 border-accent-main' 
+                      : 'bg-transparent border-border-main border-dashed opacity-40'
+                  }`}
+                >
+                  <span className={`text-[9px] font-bold uppercase ${slot.deptName ? 'text-accent-main' : 'text-text-muted'}`}>
+                    {slot.deptName ? slot.deptName.slice(0, 4) : 'EMPTY'}
+                  </span>
+                </div>
               ))}
-            </AnimatePresence>
+            </div>
           </div>
-        </div>
+
+        </aside>
       </div>
+
+      {/* ADD DEPARTMENT MODAL */}
+      <AnimatePresence>
+        {showAddModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 font-sans">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm" 
+              onClick={() => setShowAddModal(false)} 
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              exit={{ opacity: 0, scale: 0.95 }} 
+              className="relative w-full max-w-md bg-surface border border-border-main rounded-2xl shadow-2xl p-6"
+            >
+              <h2 className="text-2xl font-serif font-bold text-text-main mb-2">Add New Department</h2>
+              <p className="text-sm text-text-muted mb-6">Create a custom department tile on your 3D floor plan.</p>
+              
+              <form onSubmit={handleCreateDepartment} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-text-main mb-1">Select Department</label>
+                  <select 
+                    value={newDeptName}
+                    onChange={(e) => setNewDeptName(e.target.value)}
+                    required
+                    className="w-full px-4 py-2.5 rounded-lg border border-border-main bg-background text-text-main focus:outline-none focus:border-accent-main text-sm font-serif" 
+                  >
+                    <option value="" disabled>-- Choose a Department --</option>
+                    {PREDEFINED_DEPARTMENTS.map((dept, idx) => (
+                      <option key={idx} value={dept.name}>{dept.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-text-main mb-1">Assign Lead Agent (Optional)</label>
+                  <input 
+                    type="text" 
+                    value={newAgentName}
+                    onChange={(e) => setNewAgentName(e.target.value)}
+                    placeholder="e.g. Agent Carter" 
+                    className="w-full px-4 py-2.5 rounded-lg border border-border-main bg-background text-text-main focus:outline-none focus:border-accent-main text-sm" 
+                  />
+                </div>
+
+                <div className="pt-4 flex items-center justify-end gap-3 border-t border-border-soft">
+                  <button 
+                    type="button"
+                    onClick={() => setShowAddModal(false)} 
+                    className="px-4 py-2 rounded-lg text-sm font-semibold text-text-muted hover:text-text-main hover:bg-surface-2 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    className="px-5 py-2.5 bg-accent-main text-white font-semibold text-sm rounded-lg hover:bg-accent-hover shadow-sm transition flex items-center gap-1.5"
+                  >
+                    <CheckCircle size={16} /> Deploy Department
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

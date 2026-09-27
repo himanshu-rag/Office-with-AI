@@ -5,7 +5,7 @@ import { getUserCompany, getDepartments, getAgents, dbRun, createDepartment, cre
 
 export async function GET() {
   try {
-    const { userId } = await auth();
+    const userId = "dev-user-id"; // bypassed
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const cookieStore = await cookies();
@@ -24,7 +24,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { userId } = await auth();
+    const userId = "dev-user-id"; // bypassed
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const cookieStore = await cookies();

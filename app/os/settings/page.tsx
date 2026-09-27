@@ -1,203 +1,155 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Gear, WarningCircle, Trash, SpinnerGap, Key, Plus, CheckCircle } from '@phosphor-icons/react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-
-const PROVIDERS = [
-  { id: 'openai', name: 'OpenAI', icon: '🧠', prefix: 'sk-proj-...' },
-  { id: 'anthropic', name: 'Anthropic', icon: '📝', prefix: 'sk-ant-...' },
-  { id: 'google', name: 'Google (Gemini)', icon: '✨', prefix: 'AIzaSy...' },
-  { id: 'openrouter', name: 'OpenRouter', icon: '🌐', prefix: 'sk-or-v1-...' }
-];
+import { CreditCard, Key, Cpu, CheckCircle, WarningCircle } from '@phosphor-icons/react';
 
 export default function SettingsPage() {
-  const router = useRouter();
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [keys, setKeys] = useState<any[]>([]);
-  const [loadingKeys, setLoadingKeys] = useState(true);
-  const [addingKeyFor, setAddingKeyFor] = useState<string | null>(null);
-  const [newKeyValue, setNewKeyValue] = useState('');
-  const [savingKey, setSavingKey] = useState(false);
-
-  useEffect(() => {
-    fetchKeys();
-  }, []);
-
-  const fetchKeys = async () => {
-    try {
-      const res = await fetch('/api/os/company/keys');
-      const data = await res.json();
-      if (res.ok) setKeys(data.keys || []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoadingKeys(false);
-    }
-  };
-
-  const handleSaveKey = async (providerId: string) => {
-    if (!newKeyValue) return;
-    setSavingKey(true);
-    try {
-      await fetch('/api/os/company/keys', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider: providerId, apiKey: newKeyValue })
-      });
-      await fetchKeys();
-      setAddingKeyFor(null);
-      setNewKeyValue('');
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setSavingKey(false);
-    }
-  };
-
-  const handleRemoveKey = async (providerId: string) => {
-    if (!window.confirm(`Are you sure you want to remove the API key for ${providerId}? Agents using this provider will fail.`)) return;
-    try {
-      await fetch(`/api/os/company/keys?provider=${providerId}`, { method: 'DELETE' });
-      await fetchKeys();
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleDeleteWorkspace = async () => {
-    const confirmDelete = window.confirm(
-      "Are you absolutely sure you want to delete this workspace?\\n\\nThis will instantly destroy all AI Agents, Missions, Tasks, and Memories associated with this company. This action cannot be undone."
-    );
-
-    if (!confirmDelete) return;
-
-    setIsDeleting(true);
-    try {
-      const res = await fetch('/api/os/company', { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete workspace');
-      window.location.href = '/os';
-    } catch (error) {
-      console.error(error);
-      alert("There was an error deleting the workspace.");
-      setIsDeleting(false);
-    }
-  };
+  const [activeTab, setActiveTab] = useState('billing');
 
   return (
-    <div className="p-8 max-w-3xl mx-auto pb-32">
-      <div className="mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-zinc-900 border border-white/5 rounded-xl flex items-center justify-center shadow-lg">
-            <Gear size={24} weight="duotone" className="text-zinc-400" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-1)' }}>Settings</h1>
-            <p className="text-sm" style={{ color: 'var(--text-2)' }}>Manage your workspace preferences, AI Providers, and security.</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-8">
+    <div className="flex h-full bg-background-2 text-text-main overflow-y-auto">
+      <div className="max-w-5xl w-full mx-auto p-10">
         
-        {/* AI PROVIDERS VAULT */}
-        <div className="card p-8 border border-white/5 rounded-2xl relative overflow-hidden shadow-lg" style={{ background: 'var(--surface)' }}>
-          <div className="flex items-center gap-3 mb-2">
-            <Key size={20} weight="duotone" style={{ color: 'var(--accent)' }} />
-            <h2 className="text-base font-semibold" style={{ color: 'var(--text-1)' }}>AI Providers Vault</h2>
+        <header className="mb-10">
+          <h1 className="text-3xl font-semibold tracking-tight text-text-main mb-2">Platform Settings</h1>
+          <p className="text-text-muted">Manage your subscription, compute credits, and AI API keys.</p>
+        </header>
+
+        <div className="flex gap-10">
+          {/* Sidebar Nav */}
+          <div className="w-64 flex-shrink-0 space-y-2">
+            {[
+              { id: 'billing', label: 'Subscription & Billing', icon: CreditCard },
+              { id: 'keys', label: 'Bring Your Own AI (BYOK)', icon: Key },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                  activeTab === tab.id 
+                    ? 'bg-surface border border-border-main text-text-main shadow-sm' 
+                    : 'text-text-muted hover:text-text-main hover:bg-surface/50 border border-transparent'
+                }`}
+              >
+                <tab.icon size={18} className={activeTab === tab.id ? 'text-accent-main' : 'text-text-dim'} />
+                {tab.label}
+              </button>
+            ))}
           </div>
-          <p className="text-sm mb-6" style={{ color: 'var(--text-2)' }}>
-            Connect API keys from different AI providers. Once connected, you can assign these "brains" to specific agents in the Organization Builder based on their capabilities.
-          </p>
 
-          <div className="space-y-3">
-            {loadingKeys ? (
-              <div className="p-8 flex justify-center"><SpinnerGap size={24} className="animate-spin text-zinc-500" /></div>
-            ) : (
-              PROVIDERS.map(p => {
-                const connectedKey = keys.find(k => k.provider === p.id);
-                const isAdding = addingKeyFor === p.id;
+          {/* Content Area */}
+          <div className="flex-1">
+            {activeTab === 'billing' && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                
+                {/* Current Plan */}
+                <section className="bg-surface border border-border-main rounded-[24px] p-8 shadow-sm">
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <h2 className="text-lg font-semibold mb-1 text-text-main">Managed AI Workforce</h2>
+                      <p className="text-sm text-text-muted">You are currently on the fully managed plan. Platform and AI compute fees are combined.</p>
+                    </div>
+                    <span className="px-3 py-1 bg-success-main/10 text-success-main border border-success-main/20 rounded-full text-xs font-bold tracking-wide uppercase">Active</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-6 mb-8">
+                    <div className="p-5 bg-background rounded-2xl border border-border-soft">
+                      <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1">Compute Credits Available</div>
+                      <div className="text-3xl font-semibold text-text-main">$142.50</div>
+                    </div>
+                    <div className="p-5 bg-background rounded-2xl border border-border-soft">
+                      <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1">Platform Fee</div>
+                      <div className="text-3xl font-semibold text-text-main">$99<span className="text-sm text-text-muted font-normal">/mo</span></div>
+                    </div>
+                  </div>
 
-                return (
-                  <div key={p.id} className="p-4 rounded-xl border flex flex-col gap-3 transition-colors" style={{ background: 'var(--surface-2)', borderColor: connectedKey ? 'var(--accent)' : 'var(--border)' }}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xl">{p.icon}</span>
-                        <div>
-                          <div className="text-sm font-semibold" style={{ color: 'var(--text-1)' }}>{p.name}</div>
-                          {connectedKey ? (
-                            <div className="text-[11px] font-mono text-green-400 flex items-center gap-1 mt-0.5">
-                              <CheckCircle weight="fill" /> {connectedKey.masked_key}
-                            </div>
-                          ) : (
-                            <div className="text-[11px]" style={{ color: 'var(--text-3)' }}>Not connected</div>
-                          )}
+                  <button className="px-6 py-3 bg-background border border-border-main text-text-main rounded-full text-sm font-medium hover:bg-surface-2 transition-colors">
+                    Manage Subscription via Stripe
+                  </button>
+                </section>
+
+                {/* Purchased Models */}
+                <section className="bg-surface border border-border-main rounded-[24px] p-8 shadow-sm">
+                  <h2 className="text-lg font-semibold mb-6 text-text-main">Platform AI Models Available</h2>
+                  <div className="space-y-4">
+                    {['GPT-4o (OpenAI)', 'Claude 3.5 Sonnet (Anthropic)', 'Gemini 1.5 Pro (Google)'].map(model => (
+                      <div key={model} className="flex items-center justify-between p-4 bg-background border border-border-soft rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <Cpu size={20} className="text-accent-main" />
+                          <span className="text-sm font-medium">{model}</span>
                         </div>
+                        <CheckCircle size={20} weight="fill" className="text-success-main" />
                       </div>
-                      
-                      {connectedKey ? (
-                        <button onClick={() => handleRemoveKey(p.id)} className="text-xs text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-colors">Disconnect</button>
-                      ) : (
-                        <button 
-                          onClick={() => setAddingKeyFor(isAdding ? null : p.id)} 
-                          className="text-xs px-3 py-1.5 rounded-lg border font-medium flex items-center gap-1 transition-colors"
-                          style={{ borderColor: 'var(--border)', color: 'var(--text-1)', background: isAdding ? 'var(--surface)' : 'transparent' }}
-                        >
-                          {isAdding ? 'Cancel' : <><Plus weight="bold" /> Connect</>}
-                        </button>
-                      )}
+                    ))}
+                  </div>
+                </section>
+
+              </motion.div>
+            )}
+
+            {activeTab === 'keys' && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                
+                <section className="bg-surface border border-border-main rounded-[24px] p-8 shadow-sm">
+                  <div className="mb-8">
+                    <h2 className="text-lg font-semibold mb-2 text-text-main">Bring Your Own AI</h2>
+                    <p className="text-sm text-text-muted leading-relaxed">
+                      Prefer to pay API providers directly? Enter your own API keys below. When a key is active, agents using that specific model will bill directly to your personal API account instead of deducting from your platform compute credits.
+                    </p>
+                  </div>
+
+                  <div className="space-y-6">
+                    {/* OpenAI Key */}
+                    <div>
+                      <label className="block text-sm font-medium text-text-main mb-2">OpenAI API Key</label>
+                      <div className="flex gap-3">
+                        <input 
+                          type="password" 
+                          placeholder="sk-proj-..." 
+                          className="flex-1 bg-background border border-border-main text-text-main rounded-xl px-4 py-3 outline-none focus:border-accent-main transition-colors placeholder:text-text-dim"
+                        />
+                        <button className="px-6 py-3 bg-accent-main text-white rounded-xl text-sm font-medium hover:scale-[0.98] transition-transform">Save</button>
+                      </div>
                     </div>
 
-                    {/* Add Key Form Expansion */}
-                    {isAdding && !connectedKey && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="pt-3 border-t mt-1 flex gap-2" style={{ borderColor: 'var(--border)' }}>
+                    {/* Anthropic Key */}
+                    <div>
+                      <label className="block text-sm font-medium text-text-main mb-2">Anthropic API Key</label>
+                      <div className="flex gap-3">
                         <input 
-                          type="password"
-                          placeholder={p.prefix}
-                          value={newKeyValue}
-                          onChange={e => setNewKeyValue(e.target.value)}
-                          className="flex-1 text-sm bg-black/20 border border-white/5 rounded-lg px-3 py-2 font-mono text-zinc-300 focus:outline-none focus:border-blue-500"
+                          type="password" 
+                          placeholder="sk-ant-..." 
+                          className="flex-1 bg-background border border-border-main text-text-main rounded-xl px-4 py-3 outline-none focus:border-accent-main transition-colors placeholder:text-text-dim"
                         />
-                        <button 
-                          onClick={() => handleSaveKey(p.id)}
-                          disabled={!newKeyValue || savingKey}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium disabled:opacity-50"
-                        >
-                          {savingKey ? <SpinnerGap className="animate-spin" /> : 'Save'}
-                        </button>
-                      </motion.div>
-                    )}
+                        <button className="px-6 py-3 bg-accent-main text-white rounded-xl text-sm font-medium hover:scale-[0.98] transition-transform">Save</button>
+                      </div>
+                    </div>
+                    
+                    {/* Gemini Key */}
+                    <div>
+                      <label className="block text-sm font-medium text-text-main mb-2">Gemini API Key</label>
+                      <div className="flex gap-3">
+                        <input 
+                          type="password" 
+                          placeholder="AIzaSy..." 
+                          className="flex-1 bg-background border border-border-main text-text-main rounded-xl px-4 py-3 outline-none focus:border-accent-main transition-colors placeholder:text-text-dim"
+                        />
+                        <button className="px-6 py-3 bg-accent-main text-white rounded-xl text-sm font-medium hover:scale-[0.98] transition-transform">Save</button>
+                      </div>
+                    </div>
                   </div>
-                );
-              })
-            )}
-          </div>
-        </div>
 
-        {/* DANGER ZONE */}
-        <div className="rounded-2xl border border-red-500/30 overflow-hidden" style={{ background: 'var(--surface)' }}>
-          <div className="border-b border-red-500/20 bg-red-500/5 px-6 py-4 flex items-center gap-3">
-            <WarningCircle size={20} className="text-red-500" weight="fill" />
-            <h2 className="text-sm font-bold text-red-500 uppercase tracking-widest">Danger Zone</h2>
-          </div>
-          <div className="p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-              <div>
-                <h3 className="text-base font-semibold" style={{ color: 'var(--text-1)' }}>Delete Workspace</h3>
-                <p className="text-sm mt-1 max-w-sm leading-relaxed" style={{ color: 'var(--text-2)' }}>
-                  Permanently erase your company, all specialized agents, historical tasks, and organizational memory.
-                </p>
-              </div>
-              
-              <button 
-                onClick={handleDeleteWorkspace}
-                disabled={isDeleting}
-                className="shrink-0 flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500 hover:text-white text-red-500 border border-red-500/30 hover:border-red-500 rounded-lg text-sm font-bold transition-all disabled:opacity-50"
-              >
-                {isDeleting ? <><SpinnerGap size={18} className="animate-spin" /> Destroying...</> : <><Trash size={18} /> Delete Workspace</>}
-              </button>
-            </div>
+                  <div className="mt-8 p-4 bg-warn-main/10 border border-warn-main/20 rounded-xl flex gap-3 items-start">
+                    <WarningCircle size={20} className="text-warn-main flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-text-muted leading-relaxed">
+                      Your keys are encrypted at rest. If you remove a key, the platform will automatically fallback to deducting from your prepaid Platform Compute Credits.
+                    </p>
+                  </div>
+
+                </section>
+              </motion.div>
+            )}
           </div>
         </div>
 

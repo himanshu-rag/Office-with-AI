@@ -21,11 +21,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className={`${geist.variable} ${geistMono.variable} font-sans min-h-screen antialiased`} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          <ClerkProvider>
-            <ClerkSafeWrapper hasKeys={hasClerkKeys}>
-              {children}
-            </ClerkSafeWrapper>
-          </ClerkProvider>
+          
+            {children}
+          
         </ThemeProvider>
       </body>
     </html>

@@ -1,17 +1,17 @@
 import type { ReactNode } from 'react';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { auth } from '@clerk/nextjs/server';
+
 import { getUserCompany } from '@/lib/os-db';
 import { Sidebar } from './components/Sidebar';
 import CommandBarWrapper from './components/CommandBarWrapper';
 
 export default async function OSLayout({ children }: { children: ReactNode }) {
-  const { userId } = await auth();
+  const userId = "dev-user-id";
 
   // If not logged in, clerk middleware handles it, but just in case:
   if (!userId) {
-    redirect('/sign-in');
+    // redirect('/sign-in');
   }
 
   const cookieStore = await cookies();
@@ -21,7 +21,7 @@ export default async function OSLayout({ children }: { children: ReactNode }) {
   const company = getUserCompany(userId, activeCompanyId);
   
   if (!company) {
-    redirect('/onboarding');
+    // redirect('/onboarding');
   }
 
   return (

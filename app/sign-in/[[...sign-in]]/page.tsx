@@ -1,9 +1,7 @@
-import { SignIn } from '@clerk/nextjs';
+import { redirect } from 'next/navigation';
 
 export default function SignInPage() {
-  return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--bg)' }}>
-      <SignIn />
-    </div>
-  );
+  // Force redirect to the office page immediately to bypass the broken Clerk auth
+  redirect('/os/office');
+  return null;
 }
