@@ -1,22 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #EAE0D3;
-  --bg-2: #F3EBE1;
-  --surface: #F8F3EB;
-  --surface-2: #EFE6D8;
-  --border: #D8CBB6;
-  --border-soft: #E8DECf;
+  color-scheme: dark;
+  --bg: #0B0F14;
+  --bg-2: #0F151C;
+  --surface: #121923;
+  --surface-2: #1A2332;
+  --border: #1F2937;
+  --border-soft: #151C28;
 
-  --text-1: #2A2723;
-  --text-2: #5C5549;
-  --text-3: #8A8273;
+  --text-1: #FFFFFF;
+  --text-2: #9CA3AF;
+  --text-3: #4B5563;
 
-  --accent: #294A38;
-  --accent-2: #1E382A;
+  --accent: #4F46E5;
+  --accent-2: #8B5CF6;
   
-  --success: #388E3C;
-  --warn: #D68E42;
+  --success: #10B981;
+  --warn: #F59E0B;
 }
 
 @theme {
@@ -37,8 +38,8 @@
   --color-success-main: var(--success);
   --color-warn-main: var(--warn);
 
-  --font-sans: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
-  --font-serif: "Georgia", "Playfair Display", "Times New Roman", serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: "Geist", "Inter", sans-serif; /* We'll use modern sans for headers too, matching premium AI style */
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -46,11 +47,11 @@ body {
   background-color: var(--bg);
   color: var(--text-1);
   -webkit-font-smoothing: antialiased;
-  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
 }
 
 h1, h2, h3, h4, h5, .font-serif {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
+  letter-spacing: -0.02em;
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -58,3 +59,14 @@ h1, h2, h3, h4, h5, .font-serif {
 .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
 html { scroll-behavior: smooth; }
+
+/* React Flow Dark Controls Fix */
+.dark-controls button {
+  background-color: #121923 !important;
+  border-bottom: 1px solid #1F2937 !important;
+  fill: #9CA3AF !important;
+}
+.dark-controls button:hover {
+  background-color: #1A2332 !important;
+  fill: #FFFFFF !important;
+}

@@ -10,8 +10,12 @@ export async function GET() {
 
     const cookieStore = await cookies();
     const activeCompanyId = cookieStore.get('os_active_workspace')?.value;
-    const company = getUserCompany(userId, activeCompanyId);
-    if (!company) return NextResponse.json({ error: 'No company found' }, { status: 404 });
+    let company = getUserCompany(userId, activeCompanyId);
+    if (!company) {
+      const all = require('@/lib/os-db').getAllCompanies();
+      if (all.length > 0) company = all[0];
+      else return NextResponse.json({ error: 'No company found' }, { status: 404 });
+    }
 
     const departments = getDepartments(company.id as string);
     const agents = getAgents(company.id as string);
@@ -29,8 +33,12 @@ export async function POST(req: Request) {
 
     const cookieStore = await cookies();
     const activeCompanyId = cookieStore.get('os_active_workspace')?.value;
-    const company = getUserCompany(userId, activeCompanyId);
-    if (!company) return NextResponse.json({ error: 'No company found' }, { status: 404 });
+    let company = getUserCompany(userId, activeCompanyId);
+    if (!company) {
+      const all = require('@/lib/os-db').getAllCompanies();
+      if (all.length > 0) company = all[0];
+      else return NextResponse.json({ error: 'No company found' }, { status: 404 });
+    }
 
     const body = await req.json();
     const { departments, agents } = body;

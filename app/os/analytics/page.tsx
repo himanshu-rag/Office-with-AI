@@ -19,7 +19,7 @@ function SpendChart({ SPEND_DATA }: { SPEND_DATA: any[] }) {
 
   if (!SPEND_DATA || SPEND_DATA.length === 0) return null;
 
-  const maxSpend = Math.max(...SPEND_DATA.map(d => d.spend));
+  const maxSpend = Math.max(...SPEND_DATA.map(d => d.spend)) || 1;
   const pts = SPEND_DATA.map((d, i) => ({
     x: padL + (i / (SPEND_DATA.length - 1)) * chartW,
     y: padT + chartH - (d.spend / maxSpend) * chartH,

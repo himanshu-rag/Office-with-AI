@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Get department names for the agents
-  const agents = db.prepare('SELECT id, department_name, name FROM agents WHERE company_id = ?').all(companyId) as any[];
+  const agents = db.prepare('SELECT id, department_id, name FROM agents WHERE company_id = ?').all(companyId) as any[];
   
   const departmentCosts: Record<string, number> = {};
   for (const a of agents) {

@@ -1,11 +1,59 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CreditCard, Key, Cpu, CheckCircle, WarningCircle } from '@phosphor-icons/react';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('billing');
+  
+  // State for keys
+  const [keys, setKeys] = useState({ openai: '', anthropic: '', google: '' });
+  const [savedKeys, setSavedKeys] = useState({ openai: false, anthropic: false, google: false });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchKeys();
+  }, []);
+
+  const fetchKeys = async () => {
+    try {
+      const res = await fetch('/api/os/company/keys');
+      if (res.ok) {
+        const data = await res.json();
+        const activeKeys = {};
+        data.keys.forEach(k => { activeKeys[k.provider] = true; });
+        setSavedKeys(activeKeys);
+      }
+    } catch(e) {}
+    setLoading(false);
+  };
+
+  const handleSaveKey = async (provider) => {
+    const key = keys[provider];
+    if (!key) return;
+    try {
+      const res = await fetch('/api/os/company/keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider, apiKey: key })
+      });
+      if (res.ok) {
+        setSavedKeys(prev => ({ ...prev, [provider]: true }));
+        setKeys(prev => ({ ...prev, [provider]: '' }));
+      }
+    } catch(e) {}
+  };
+
+  const handleRemoveKey = async (provider) => {
+    try {
+      const res = await fetch('/api/os/company/keys?provider=' + provider, { method: 'DELETE' });
+      if (res.ok) {
+        setSavedKeys(prev => ({ ...prev, [provider]: false }));
+      }
+    } catch(e) {}
+  };
+
 
   return (
     <div className="flex h-full bg-background-2 text-text-main overflow-y-auto">
@@ -102,40 +150,58 @@ export default function SettingsPage() {
                   <div className="space-y-6">
                     {/* OpenAI Key */}
                     <div>
-                      <label className="block text-sm font-medium text-text-main mb-2">OpenAI API Key</label>
+                      <label className="block text-sm font-medium text-text-main mb-2">OpenAI API Key {savedKeys.openai && <span className="text-success-main text-xs ml-2">(Saved)</span>}</label>
                       <div className="flex gap-3">
                         <input 
                           type="password" 
-                          placeholder="sk-proj-..." 
+                          value={keys.openai}
+                          onChange={(e) => setKeys(prev => ({...prev, openai: e.target.value}))}
+                          placeholder={savedKeys.openai ? "••••••••••••••••••••••••" : "sk-proj-..."} 
                           className="flex-1 bg-background border border-border-main text-text-main rounded-xl px-4 py-3 outline-none focus:border-accent-main transition-colors placeholder:text-text-dim"
                         />
-                        <button className="px-6 py-3 bg-accent-main text-white rounded-xl text-sm font-medium hover:scale-[0.98] transition-transform">Save</button>
+                        {savedKeys.openai && !keys.openai ? (
+                           <button onClick={() => handleRemoveKey('openai')} className="px-6 py-3 bg-warn-main/20 text-warn-main rounded-xl text-sm font-medium hover:scale-[0.98] transition-transform">Remove</button>
+                        ) : (
+                           <button onClick={() => handleSaveKey('openai')} className="px-6 py-3 bg-accent-main text-white rounded-xl text-sm font-medium hover:scale-[0.98] transition-transform">Save</button>
+                        )}
                       </div>
                     </div>
 
                     {/* Anthropic Key */}
                     <div>
-                      <label className="block text-sm font-medium text-text-main mb-2">Anthropic API Key</label>
+                      <label className="block text-sm font-medium text-text-main mb-2">Anthropic API Key {savedKeys.anthropic && <span className="text-success-main text-xs ml-2">(Saved)</span>}</label>
                       <div className="flex gap-3">
                         <input 
                           type="password" 
-                          placeholder="sk-ant-..." 
+                          value={keys.anthropic}
+                          onChange={(e) => setKeys(prev => ({...prev, anthropic: e.target.value}))}
+                          placeholder={savedKeys.anthropic ? "••••••••••••••••••••••••" : "sk-ant-..."} 
                           className="flex-1 bg-background border border-border-main text-text-main rounded-xl px-4 py-3 outline-none focus:border-accent-main transition-colors placeholder:text-text-dim"
                         />
-                        <button className="px-6 py-3 bg-accent-main text-white rounded-xl text-sm font-medium hover:scale-[0.98] transition-transform">Save</button>
+                        {savedKeys.anthropic && !keys.anthropic ? (
+                           <button onClick={() => handleRemoveKey('anthropic')} className="px-6 py-3 bg-warn-main/20 text-warn-main rounded-xl text-sm font-medium hover:scale-[0.98] transition-transform">Remove</button>
+                        ) : (
+                           <button onClick={() => handleSaveKey('anthropic')} className="px-6 py-3 bg-accent-main text-white rounded-xl text-sm font-medium hover:scale-[0.98] transition-transform">Save</button>
+                        )}
                       </div>
                     </div>
                     
                     {/* Gemini Key */}
                     <div>
-                      <label className="block text-sm font-medium text-text-main mb-2">Gemini API Key</label>
+                      <label className="block text-sm font-medium text-text-main mb-2">Gemini API Key {savedKeys.google && <span className="text-success-main text-xs ml-2">(Saved)</span>}</label>
                       <div className="flex gap-3">
                         <input 
                           type="password" 
-                          placeholder="AIzaSy..." 
+                          value={keys.google}
+                          onChange={(e) => setKeys(prev => ({...prev, google: e.target.value}))}
+                          placeholder={savedKeys.google ? "••••••••••••••••••••••••" : "AIzaSy..."} 
                           className="flex-1 bg-background border border-border-main text-text-main rounded-xl px-4 py-3 outline-none focus:border-accent-main transition-colors placeholder:text-text-dim"
                         />
-                        <button className="px-6 py-3 bg-accent-main text-white rounded-xl text-sm font-medium hover:scale-[0.98] transition-transform">Save</button>
+                        {savedKeys.google && !keys.google ? (
+                           <button onClick={() => handleRemoveKey('google')} className="px-6 py-3 bg-warn-main/20 text-warn-main rounded-xl text-sm font-medium hover:scale-[0.98] transition-transform">Remove</button>
+                        ) : (
+                           <button onClick={() => handleSaveKey('google')} className="px-6 py-3 bg-accent-main text-white rounded-xl text-sm font-medium hover:scale-[0.98] transition-transform">Save</button>
+                        )}
                       </div>
                     </div>
                   </div>

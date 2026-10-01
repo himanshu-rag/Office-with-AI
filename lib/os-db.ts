@@ -13,6 +13,18 @@ export function getDb(): Database.Database {
     _db = new Database(DB_PATH);
     _db.pragma('journal_mode = WAL');
     _db.pragma('foreign_keys = ON');
+    _db.exec(`
+      CREATE TABLE IF NOT EXISTS knowledge_base (
+        id TEXT PRIMARY KEY,
+        company_id TEXT NOT NULL,
+        category TEXT NOT NULL,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        updated_by TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
     runMigrations(_db);
   }
   return _db;
@@ -131,6 +143,12 @@ export function getTasks(missionId: string) {
     'SELECT t.*, a.name as agent_name, a.avatar_emoji, a.status as agent_status, d.name as department_name, d.icon as department_icon FROM tasks t LEFT JOIN agents a ON t.agent_id = a.id LEFT JOIN departments d ON t.department_id = d.id WHERE t.mission_id = ? ORDER BY t.created_at',
     [missionId]);
 }
+export function getAllTasks(companyId: string) {
+  return dbAll<Record<string,unknown>>(
+    'SELECT t.*, a.name as agent_name, a.avatar_emoji, a.status as agent_status, d.name as department_name, d.icon as department_icon FROM tasks t LEFT JOIN agents a ON t.agent_id = a.id LEFT JOIN departments d ON t.department_id = d.id WHERE t.company_id = ? ORDER BY t.created_at',
+    [companyId]);
+}
+
 export function getTask(id: string) { return dbGet<Record<string,unknown>>('SELECT * FROM tasks WHERE id = ?', [id]); }
 export function createTask(data: Record<string,unknown> & { mission_id: string; company_id: string; title: string }) {
   const id = generateId();
@@ -365,4 +383,18 @@ export function addAgentMemory(data: { agent_id: string; mission_id?: string; ke
     [id, data.agent_id, data.mission_id || null, data.key, data.value]
   );
   return id;
+}
+
+
+// ─── Knowledge Base ────────────────────────────────────────────
+
+export function getKnowledge(companyId: string) {
+  return dbAll<Record<string, unknown>>('SELECT * FROM knowledge_base WHERE company_id = ? ORDER BY category, title', [companyId]);
+}
+
+export function addKnowledge(data: { company_id: string; category: string; title: string; content: string; updated_by?: string }) {
+  const id = generateId();
+  dbRun('INSERT INTO knowledge_base (id, company_id, category, title, content, updated_by) VALUES (?, ?, ?, ?, ?, ?)',
+    [id, data.company_id, data.category, data.title, data.content, data.updated_by || 'CEO Agent']);
+  return dbGet('SELECT * FROM knowledge_base WHERE id = ?', [id]);
 }

@@ -168,7 +168,7 @@ export default function AgentProfileWorkspace({ params }: { params: Promise<{ id
   );
 }
 
-import { useChat } from 'ai/react';
+import { useChat } from '@ai-sdk/react';
 
 function ChatTab({ agent }: { agent: any }) {
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({

@@ -4,18 +4,19 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Buildings, Target, Tray, Users, Lightning, ChartBar, Gear, CaretLeft, CaretRight, PlusCircle, BookOpen, Wrench } from '@phosphor-icons/react';
+import { House, Buildings, Users, ClipboardText, Folder, Chats, ChartBar, Gear, BookOpen, CaretLeft, CaretRight, PlusCircle, Lightning } from '@phosphor-icons/react';
 import WorkspaceSwitcher from './WorkspaceSwitcher';
 
 const NAV_ITEMS = [
-  { label: 'Campus',       href: '/os/office',     icon: Buildings },
-  { label: 'Missions',     href: '/os/missions',   icon: Target    },
-  { label: 'Inbox',        href: '/os/inbox',      icon: Tray      },
-  { label: 'Organization', href: '/os/org',        icon: Users     },
-  { label: 'Activity',     href: '/os/activity',   icon: Lightning },
-  { label: 'Analytics',    href: '/os/analytics',  icon: ChartBar  },
-  { label: 'Knowledge',    href: '/os/knowledge',  icon: BookOpen  },
-  { label: 'Tools',        href: '/os/tools',      icon: Wrench    },
+  { label: 'Home',         href: '/os/home',       icon: House },
+  { label: 'Virtual Office',href: '/os/office',     icon: Buildings },
+  { label: 'AI Agents',    href: '/os/agents',     icon: Users },
+  { label: 'Tasks',        href: '/os/tasks',      icon: ClipboardText },
+  { label: 'Projects',     href: '/os/projects',   icon: Folder },
+  { label: 'Team Chat',    href: '/os/chat',       icon: Chats },
+  { label: 'Knowledge',    href: '/os/knowledge',  icon: BookOpen },
+  { label: 'Analytics',    href: '/os/analytics',  icon: ChartBar },
+  { label: 'Settings',     href: '/os/settings',   icon: Gear },
 ];
 
 export function Sidebar() {
@@ -45,10 +46,10 @@ export function Sidebar() {
           return (
             <Link key={item.label} href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200
-                ${isActive ? 'bg-background text-text-main border border-border-main shadow-sm' : 'text-text-muted hover:text-text-main hover:bg-surface-2 border border-transparent'}
+                ${isActive ? 'bg-accent-main text-white shadow-md' : 'text-text-muted hover:text-text-main hover:bg-surface-2'}
               `}
               style={{ justifyContent: collapsed ? 'center' : undefined }}>
-              <item.icon size={20} weight={isActive ? "fill" : "regular"} className={isActive ? 'text-accent-main' : ''} />
+              <item.icon size={20} weight={isActive ? "fill" : "regular"} className={isActive ? 'text-white' : ''} />
               <AnimatePresence>
                 {!collapsed && (
                   <motion.span initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 'auto' }} exit={{ opacity: 0, width: 0 }}

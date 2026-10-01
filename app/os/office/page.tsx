@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import Link from "next/link";
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, PencilSimple, DotsSix, ArrowsOut, ArrowsLeftRight, CaretDown, Sun, Trash, Buildings, User, CheckCircle } from '@phosphor-icons/react';
+import { Plus, PencilSimple, DotsSix, ArrowsOut, ArrowsLeftRight, CaretDown, Sun, Trash, Buildings, User, CheckCircle , MagnifyingGlass, Bell } from '@phosphor-icons/react';
+import { AgentChatWindow } from '../components/AgentChatWindow';
 
 interface DepartmentSlot {
   id: string;
@@ -45,6 +47,43 @@ export default function ModularOfficePage() {
   const [newAgentName, setNewAgentName] = useState('');
   const [selectedForSwap, setSelectedForSwap] = useState<string | null>(null);
   const officeRef = useRef<HTMLDivElement>(null);
+
+  // Agent Chat Windows
+  const [realAgents, setRealAgents] = useState<any[]>([]);
+  const [openChatWindows, setOpenChatWindows] = useState<any[]>([]);
+
+  // Fetch real agents to map their IDs and real-time status
+  useEffect(() => {
+    const fetchAgents = async () => {
+      try {
+        const res = await fetch('/api/os/org');
+        const data = await res.json();
+        if (data.agents) {
+          setRealAgents(data.agents);
+        }
+      } catch (e) { console.error(e); }
+    };
+    fetchAgents();
+    const interval = setInterval(fetchAgents, 5000); // Live poll
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleAgentClick = (e: React.MouseEvent, fakeAgent: any) => {
+    e.stopPropagation();
+    if (isEditMode) return;
+    
+    // Try to find the real agent in DB (match by name or just fallback to first available to ensure it works)
+    let real = realAgents.find(a => a.name.includes(fakeAgent.name) || fakeAgent.name.includes(a.name));
+    if (!real && realAgents.length > 0) real = realAgents[0]; // fallback
+    if (!real) {
+      alert("Real agent not found in database! Please sync organization.");
+      return;
+    }
+
+    if (openChatWindows.find(w => w.id === real.id)) return; // already open
+    setOpenChatWindows(prev => [...prev, real]);
+  };
+
 
   // Filter active departments count
   const activeDepartmentsCount = slots.filter(s => s.deptName !== null).length;
@@ -143,26 +182,13 @@ export default function ModularOfficePage() {
       {/* TOP BAR */}
       <header className="flex items-center justify-between px-8 py-5 border-b border-border-main bg-surface shadow-xs shrink-0">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-text-main tracking-tight">Office Floor Plan</h1>
-          <p className="text-xs font-sans text-text-muted mt-0.5">
-            Modular 3D Isometric View &bull; <span className="font-semibold text-accent-main">{activeDepartmentsCount} Active Departments</span> &bull; {activeAgentsCount} Agents On Duty
-          </p>
+          <h1 className="text-2xl font-bold text-text-main">AI Company Office</h1>
+          <p className="text-sm text-text-muted mt-0.5">Office Floor</p>
         </div>
-
-        <div className="flex items-center gap-3 font-sans">
-          <button 
-            onClick={() => { console.log("Toggling edit mode", !isEditMode); setIsEditMode(!isEditMode); }} 
-            className={`flex items-center gap-2 border border-border-main rounded-lg px-4 py-2 shadow-sm font-semibold text-sm transition ${isEditMode ? 'bg-accent-main text-white border-accent-main' : 'bg-surface text-text-main hover:bg-surface-2'}`}
-          >
-            <PencilSimple size={16} />
-            {isEditMode ? 'Done Editing' : 'Customize Layout'}
-          </button>
-          <button 
-            onClick={() => handleOpenAddModal()} 
-            className="flex items-center gap-2 rounded-lg px-5 py-2 bg-accent-main text-white font-semibold text-sm shadow-sm hover:bg-accent-hover transition"
-          >
-            <Plus size={16} weight="bold" /> Add Department
-          </button>
+        <div className="flex items-center gap-4">
+          <button onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { metaKey: true, key: 'k' }))} className="text-text-muted hover:text-text-main transition-colors" title="Search (Cmd+K)"><MagnifyingGlass size={20} /></button>
+          <Link href="/os/inbox" className="text-text-muted hover:text-text-main transition-colors" title="Inbox"><Bell size={20} /></Link>
+          <Link href="/os/settings" className="w-8 h-8 rounded-full bg-surface-2 border border-border-main flex items-center justify-center text-xs font-bold text-text-main ml-2 hover:border-accent-main transition-colors" title="Settings">A</Link>
         </div>
       </header>
 
@@ -238,7 +264,10 @@ export default function ModularOfficePage() {
 
                       {/* Bottom Agent Status Pill */}
                       {slot.agent && (
-                        <div className="bg-surface/95 backdrop-blur-md border border-border-main p-2 rounded-lg shadow-md flex items-center gap-2.5 font-sans">
+                        <div 
+                          className={`bg-surface/95 backdrop-blur-md border border-border-main p-2 rounded-lg shadow-md flex items-center gap-2.5 font-sans ${!isEditMode ? 'cursor-pointer hover:border-accent-main transition-colors group/pill' : ''}`}
+                          onClick={(e) => handleAgentClick(e, slot.agent)}
+                        >
                           <div className="w-7 h-7 rounded-full bg-accent-main/20 border border-accent-main flex items-center justify-center text-sm shrink-0">
                             {slot.agent.avatar}
                           </div>
@@ -331,6 +360,25 @@ export default function ModularOfficePage() {
 
         </aside>
       </div>
+
+      {/* FLOATING AGENT CHAT WINDOWS */}
+      <AnimatePresence>
+        {openChatWindows.map((agent, i) => (
+          <AgentChatWindow
+            key={agent.id}
+            agent={agent}
+            initialPosition={{ x: 50 + (i * 20), y: 100 + (i * 20) }}
+            zIndex={100 + i}
+            onClose={() => setOpenChatWindows(prev => prev.filter(a => a.id !== agent.id))}
+            bringToFront={() => {
+              setOpenChatWindows(prev => {
+                const filtered = prev.filter(a => a.id !== agent.id);
+                return [...filtered, agent];
+              });
+            }}
+          />
+        ))}
+      </AnimatePresence>
 
       {/* ADD DEPARTMENT MODAL */}
       <AnimatePresence>
