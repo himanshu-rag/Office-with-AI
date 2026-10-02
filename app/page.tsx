@@ -73,7 +73,7 @@ export default function LandingPage() {
             A
           </div>
           <div>
-            <h1 className="font-serif font-bold text-xl tracking-tight uppercase leading-none">Ai Office OS</h1>
+            <h1 className="font-serif font-bold text-xl tracking-tight uppercase leading-none">Office-with-AI</h1>
             <span className="font-mono text-[10px] tracking-widest text-text-muted uppercase">HQ Terminal &bull; v2.0</span>
           </div>
         </div>

@@ -194,7 +194,7 @@ export default function OnboardingPage() {
                     <div className="w-10 h-10 rounded-full bg-accent-main/10 flex items-center justify-center mb-4">
                       <ShieldCheck size={20} className="text-accent-main" weight="duotone" />
                     </div>
-                    <h3 className="text-lg font-bold text-text-main mb-1">Ai Office Managed</h3>
+                    <h3 className="text-lg font-bold text-text-main mb-1">Office-with-AI Managed</h3>
                     <p className="text-sm text-text-muted mb-4">Instant setup, automatic model routing, and built-in budget controls.</p>
                     <ul className="space-y-2 mb-4">
                       <li className="flex items-center gap-2 text-xs font-medium text-text-main"><CheckCircle size={14} className="text-emerald-400" /> Save 20% on Platform Fees</li>

@@ -8,7 +8,7 @@ const geist = Geist({ variable: '--font-geist', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Ai Office — Your AI Workforce',
+  title: 'Office-with-AI — Your AI Workforce',
   description: 'Deploy specialized AI agents and watch your autonomous CEO orchestrate your operations.',
 };
 

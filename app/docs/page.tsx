@@ -8,7 +8,7 @@ export default function DocsPage() {
         <div className="flex items-center gap-8">
           <Link href="/" className="font-semibold text-lg flex items-center gap-2">
             <div className="w-6 h-6 bg-accent-main rounded text-white flex items-center justify-center text-xs">A</div>
-            Ai Office
+            Office-with-AI
           </Link>
           <div className="h-4 w-px bg-border-main" />
           <span className="text-text-muted text-sm font-medium">Documentation</span>
@@ -51,14 +51,14 @@ export default function DocsPage() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-main/10 border border-accent-main/20 text-accent-main text-xs font-bold uppercase tracking-wider mb-6">
             Overview
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">Welcome to Ai Office</h1>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">Welcome to Office-with-AI</h1>
           <p className="text-lg text-text-muted leading-relaxed mb-10">
-            Ai Office is the operating system for your autonomous digital workforce. Stop managing chat threads and start managing a company.
+            Office-with-AI is the operating system for your autonomous digital workforce. Stop managing chat threads and start managing a company.
           </p>
 
           <h2 className="text-2xl font-semibold mt-12 mb-4 border-b border-border-main pb-2">The Hybrid Intelligence Model</h2>
           <p className="text-text-muted leading-relaxed mb-4">
-            We designed Ai Office to be flexible for both enterprise and technical operators. You can run your company using one of two billing modes:
+            We designed Office-with-AI to be flexible for both enterprise and technical operators. You can run your company using one of two billing modes:
           </p>
           
           <div className="space-y-4 my-8">

@@ -1,4 +1,4 @@
--- Ai Office OS SQLite Schema
+-- Office-with-AI SQLite Schema
 PRAGMA journal_mode = WAL;
 PRAGMA foreign_keys = ON;
 

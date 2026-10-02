@@ -79,7 +79,7 @@ export default function WorkspaceSwitcher({ collapsed }: { collapsed: boolean })
               <div className="flex flex-col items-start truncate">
                 <span className="text-[10px] font-medium tracking-widest uppercase text-text-muted mb-0.5">Workspace</span>
                 <span className="font-semibold text-[15px] truncate text-text-main leading-none">
-                  {loading ? 'Loading...' : activeCompany?.name || 'Ai Office'}
+                  {loading ? 'Loading...' : activeCompany?.name || 'Office-with-AI'}
                 </span>
               </div>
               <CaretUpDown size={14} className="text-text-muted flex-shrink-0 ml-2" />

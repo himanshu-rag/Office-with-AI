@@ -1,12 +1,12 @@
-# Ai Office OS
+# Office-with-AI OS
 
-Welcome to **Ai Office OS**, the premier autonomous agent control center. This platform serves as a virtual office where you can deploy, manage, and collaborate with specialized AI agents working alongside you.
+Welcome to **Office-with-AI OS**, the premier autonomous agent control center. This platform serves as a virtual office where you can deploy, manage, and collaborate with specialized AI agents working alongside you.
 
 ## System Architecture & Features
 
 ```mermaid
 mindmap
-  root((Ai Office OS))
+  root((Office-with-AI OS))
     Core Architecture
       Frontend
         Next.js 16 App Router

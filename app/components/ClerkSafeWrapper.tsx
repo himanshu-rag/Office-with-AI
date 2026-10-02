@@ -37,7 +37,7 @@ export function ClerkSafeWrapper({
             Authentication Setup Required
           </h1>
           <p className="text-center mb-10 text-base" style={{ color: 'var(--text-2)' }}>
-            Before launching your Ai Office, we need to secure the database so agents belong exclusively to their owners.
+            Before launching your Office-with-AI, we need to secure the database so agents belong exclusively to their owners.
           </p>
 
           <div className="space-y-4">
