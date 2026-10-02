@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Plus, Users, Folder, CheckSquareOffset, ChartLineUp, CheckCircle, ArrowRight, Hourglass, Target, Lightbulb } from '@phosphor-icons/react';
+import { Plus, Users, Folder, CheckSquareOffset, ChartLineUp, CheckCircle, ArrowRight, Hourglass, Target, Lightbulb, RocketLaunch, WarningCircle } from '@phosphor-icons/react';
 import { useCompany } from '@/lib/hooks/use-company';
 
 export default function HomeDashboard() {
