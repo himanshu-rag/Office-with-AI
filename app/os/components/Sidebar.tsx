@@ -4,11 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { House, Buildings, Users, ClipboardText, Folder, Chats, ChartBar, Gear, BookOpen, CaretLeft, CaretRight, PlusCircle, Lightning } from '@phosphor-icons/react';
+import { House, Brain, Buildings, Users, ClipboardText, Folder, Chats, ChartBar, Gear, BookOpen, CaretLeft, CaretRight, PlusCircle, Lightning } from '@phosphor-icons/react';
 import WorkspaceSwitcher from './WorkspaceSwitcher';
 
 const NAV_ITEMS = [
   { label: 'Home',         href: '/os/home',       icon: House },
+  { label: 'AI CEO',       href: '/os/ceo',        icon: Brain },
   { label: 'Virtual Office',href: '/os/office',     icon: Buildings },
   { label: 'AI Agents',    href: '/os/agents',     icon: Users },
   { label: 'Tasks',        href: '/os/tasks',      icon: ClipboardText },
