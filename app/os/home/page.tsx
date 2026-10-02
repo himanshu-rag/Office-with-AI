@@ -66,7 +66,7 @@ export default function HomeDashboard() {
 
       
       {/* CEO Strategic Goal Section */}
-      {goal && (
+      {true && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -84,7 +84,7 @@ export default function HomeDashboard() {
                 <span className="text-xs font-bold uppercase tracking-widest text-accent-main">CEO Strategic Objective</span>
               </div>
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 leading-tight">
-                "{goal}"
+                "{goal || 'Maximize Operational Efficiency & Growth'}"
               </h2>
               <p className="text-sm text-text-muted max-w-2xl">
                 The CEO agent is currently orchestrating the organization to hit this target. Cross-departmental tasks are prioritized automatically based on direct revenue impact.
