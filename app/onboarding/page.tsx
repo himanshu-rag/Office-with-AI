@@ -202,7 +202,6 @@ export default function OnboardingPage() {
                       <li className="flex items-center gap-2 text-xs font-medium text-text-main"><CheckCircle size={14} className="text-emerald-400" /> Multi-Model Routing</li>
                     </ul>
                   </div>
-                  </div>
 
                   {/* BYOK Plan */}
                   <div 
@@ -220,7 +219,6 @@ export default function OnboardingPage() {
                       <li className="flex items-center gap-2 text-xs font-medium text-text-main"><CheckCircle size={14} className="text-text-muted" /> 100% Data Privacy</li>
                       <li className="flex items-center gap-2 text-xs font-medium text-text-main"><CheckCircle size={14} className="text-text-muted" /> Unlimited Spend</li>
                     </ul>
-                  </div>
                   </div>
                 </div>
 
