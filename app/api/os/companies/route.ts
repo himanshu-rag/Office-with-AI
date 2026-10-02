@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     if (!body.name) return NextResponse.json({ error: 'name required' }, { status: 400 });
     const company = createCompany({ name: body.name, type: body.type });
-    seedDemo(String(company!.id));
+    seedDemo(String(company!.id), body.type, body.goal, body.aiMode, body.apiKey);
     return NextResponse.json({ company }, { status: 201 });
   } catch (err) {
     console.error(err);
