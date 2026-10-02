@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Brain, Target, TrendUp, Lightning, CheckCircle, WarningCircle, CurrencyDollar, Users, Activity } from '@phosphor-icons/react';
 import { useCompany } from '@/lib/hooks/use-company';
 
