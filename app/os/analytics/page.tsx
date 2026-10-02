@@ -19,10 +19,10 @@ function SpendChart({ SPEND_DATA }: { SPEND_DATA: any[] }) {
 
   if (!SPEND_DATA || SPEND_DATA.length === 0) return null;
 
-  const maxSpend = Math.max(...SPEND_DATA.map(d => d.spend)) || 1;
+  const maxSpend = Math.max(...SPEND_DATA.map(d => d.cost)) || 1;
   const pts = SPEND_DATA.map((d, i) => ({
-    x: padL + (i / (SPEND_DATA.length - 1)) * chartW,
-    y: padT + chartH - (d.spend / maxSpend) * chartH,
+    x: padL + (SPEND_DATA.length > 1 ? (i / (SPEND_DATA.length - 1)) * chartW : chartW / 2),
+    y: padT + chartH - (d.cost / maxSpend) * chartH,
     ...d,
   }));
 
@@ -155,7 +155,7 @@ function SpendChart({ SPEND_DATA }: { SPEND_DATA: any[] }) {
                   fontWeight={600}
                   fill="#F5F5F7"
                   fontFamily="system-ui, sans-serif"
-                >{Number(pt.spend).toLocaleString()} credits</text>
+                >{Number(pt.cost).toLocaleString()} credits</text>
               </g>
             )}
           </g>
@@ -178,7 +178,7 @@ function Sparkline({ values, color }: { values: number[]; color: string }) {
   const W = 60, H = 28;
   const max = Math.max(...values), min = Math.min(...values);
   const pts = values.map((v, i) => ({
-    x: (i / (values.length - 1)) * W,
+    x: values.length > 1 ? (i / (values.length - 1)) * W : W / 2,
     y: H - ((v - min) / (max - min || 1)) * (H - 4) - 2,
   }));
   const line = pts.reduce((a, p, i) => i === 0 ? `M${p.x} ${p.y}` : `${a} L${p.x} ${p.y}`, '');

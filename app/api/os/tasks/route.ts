@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllTasks, createTask, addActivity } from '@/lib/os-db';
+import { processTask } from '@/lib/ai-engine';
 
 export async function GET(req: NextRequest) {
   const companyId = req.nextUrl.searchParams.get('company_id');
@@ -29,6 +30,12 @@ export async function POST(req: NextRequest) {
       event: `Assigned manual task: ${body.title}`
     });
 
+    
+    // Fire and forget: trigger the AI engine in the background
+    if (task && task.agent_id) {
+      void processTask(task.id as string, body.company_id, body.agent_id, body.title, body.description);
+    }
+    
     return NextResponse.json({ task }, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
