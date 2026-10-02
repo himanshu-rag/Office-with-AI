@@ -119,7 +119,7 @@ export default function WorkspaceSwitcher({ collapsed }: { collapsed: boolean })
               ))}
               <div className="h-px w-full my-1.5 bg-border-soft" />
               <button
-                onClick={() => router.push('/onboarding')}
+                onClick={() => { window.location.href = '/onboarding'; }}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[14px] text-sm text-left text-text-muted hover:text-text-main hover:bg-surface transition-colors"
               >
                 <Plus size={18} />
