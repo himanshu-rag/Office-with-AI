@@ -7,12 +7,11 @@ export function useCompany() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const workspaceCookie = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('os_active_workspace='));
+    const cookies = document.cookie.split(';');
+    const workspaceCookie = cookies.find(c => c.trim().startsWith('os_active_workspace='));
     
     if (workspaceCookie) {
-      setCompanyId(workspaceCookie.split('=')[1]);
+      setCompanyId(workspaceCookie.trim().split('=')[1]);
     }
     setLoading(false);
   }, []);

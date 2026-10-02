@@ -40,7 +40,7 @@ export default function OnboardingPage() {
       
       if (data.company) {
         document.cookie = `os_active_workspace=${data.company.id}; path=/; max-age=31536000`;
-        window.location.href = '/os';
+        window.location.href = '/os/home';
       } else {
         setLoading(false);
       }

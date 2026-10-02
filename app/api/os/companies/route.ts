@@ -16,7 +16,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     if (!body.name) return NextResponse.json({ error: 'name required' }, { status: 400 });
     const company = createCompany({ name: body.name, type: body.type, goal: body.goal });
-    seedDemo(String(company!.id), body.type, body.goal, body.aiMode, body.apiKey, body.audience, body.tone);
+    
+    try {
+      seedDemo(String(company!.id), body.type, body.goal, body.aiMode, body.apiKey, body.audience, body.tone);
+    } catch (seedErr) {
+      console.error('Seed error ignored:', seedErr);
+    }
+    
     return NextResponse.json({ company }, { status: 201 });
   } catch (err) {
     console.error(err);
