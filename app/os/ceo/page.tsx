@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
-import { Brain, Target, TrendUp, Lightning, CheckCircle, WarningCircle, CurrencyDollar, Users, Activity } from '@phosphor-icons/react';
+import { motion } from 'framer-motion';
+import { Brain, Target, TrendUp, Lightning, CheckCircle, WarningCircle, CurrencyDollar, Users, Pulse } from '@phosphor-icons/react';
 import { useCompany } from '@/lib/hooks/use-company';
 
 export default function CEODashboard() {
@@ -168,7 +168,7 @@ export default function CEODashboard() {
             className="bg-surface border border-border-main rounded-xl p-6 flex-1"
           >
             <h3 className="text-sm font-bold text-text-main mb-5 flex items-center gap-2 uppercase tracking-widest">
-              <Activity size={18} className="text-text-muted" /> CEO Execution Log
+              <Pulse size={18} className="text-text-muted" /> CEO Execution Log
             </h3>
             
             <div className="space-y-5 relative before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border-main before:to-transparent">
