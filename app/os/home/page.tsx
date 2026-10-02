@@ -3,16 +3,19 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Plus, Users, Folder, CheckSquareOffset, ChartLineUp, CheckCircle, ArrowRight, Hourglass } from '@phosphor-icons/react';
+import { Plus, Users, Folder, CheckSquareOffset, ChartLineUp, CheckCircle, ArrowRight, Hourglass, Target, Lightbulb } from '@phosphor-icons/react';
+import { useCompany } from '@/lib/hooks/use-company';
 
 export default function HomeDashboard() {
   const [stats, setStats] = useState({ activeAgents: 0, activeProjects: 0, tasksToday: 0, completion: 0 });
   const [missions, setMissions] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
+  const [goal, setGoal] = useState<string>('');
+  const { companyId, loading: companyLoading } = useCompany();
   
   useEffect(() => {
-    const companyId = localStorage.getItem('os_active_workspace') || '3q9yfkrlmuil1hud'; // fallback to dev
+    if (!companyId) return;
     
     // Fetch stats & missions
     Promise.all([
@@ -30,6 +33,7 @@ export default function HomeDashboard() {
       setMissions(missionsList);
       setTasks(tasksList);
       if (actData.activity) setActivities(actData.activity);
+      if (orgData.company && orgData.company.goal) setGoal(orgData.company.goal);
       
       setStats({
         activeAgents: activeAgents || orgData.agents?.length || 0,
@@ -38,7 +42,7 @@ export default function HomeDashboard() {
         completion: completionRate
       });
     }).catch(console.error);
-  }, []);
+  }, [companyId]);
   return (
     <div className="flex flex-col h-full bg-background overflow-y-auto p-8 lg:p-12 font-sans">
       

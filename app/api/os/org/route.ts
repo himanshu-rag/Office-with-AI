@@ -20,7 +20,7 @@ export async function GET() {
     const departments = getDepartments(company.id as string);
     const agents = getAgents(company.id as string);
 
-    return NextResponse.json({ departments, agents });
+    return NextResponse.json({ company, departments, agents });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

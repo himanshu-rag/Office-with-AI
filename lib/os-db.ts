@@ -31,6 +31,12 @@ export function getDb(): Database.Database {
 }
 
 function runMigrations(db: Database.Database) {
+    try {
+      db.exec('ALTER TABLE companies ADD COLUMN goal TEXT;');
+    } catch (e) {
+      // ignore if exists
+    }
+
   const schemaPath = path.join(process.cwd(), 'lib', 'os-schema.sql');
   if (!fs.existsSync(schemaPath)) return;
   const schema = fs.readFileSync(schemaPath, 'utf-8');
@@ -57,9 +63,10 @@ function generateId(): string {
 // Companies
 export function getCompany(id: string) { return dbGet<Record<string,unknown>>('SELECT * FROM companies WHERE id = ?', [id]); }
 export function getAllCompanies() { return dbAll<Record<string,unknown>>('SELECT * FROM companies ORDER BY created_at DESC'); }
-export function createCompany(data: { name: string; type?: string }) {
-  const db = getDb(); const id = generateId();
-  db.prepare('INSERT INTO companies (id, name, type) VALUES (?, ?, ?)').run(id, data.name, data.type || 'custom');
+export function createCompany(data: { name: string; type?: string; goal?: string }) {
+  const db = getDb();
+  const id = generateId();
+  db.prepare('INSERT INTO companies (id, name, type, goal) VALUES (?, ?, ?, ?)').run(id, data.name, data.type || 'custom', data.goal || '');
   db.prepare('INSERT INTO credit_accounts (id, company_id, balance) VALUES (?, ?, 25.0)').run(generateId(), id);
   return getCompany(id);
 }
