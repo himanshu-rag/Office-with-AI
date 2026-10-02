@@ -1,7 +1,6 @@
 import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import { ThemeProvider } from 'next-themes';
 import { ClerkSafeWrapper } from './components/ClerkSafeWrapper';
 import './globals.css';
 
@@ -18,13 +17,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const hasClerkKeys = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && !!process.env.CLERK_SECRET_KEY;
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${geist.variable} ${geistMono.variable} font-sans min-h-screen antialiased`} suppressHydrationWarning>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          
-            {children}
-          
-        </ThemeProvider>
+        {children}
       </body>
     </html>
   );
